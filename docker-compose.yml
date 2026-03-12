@@ -1,0 +1,47 @@
+services:
+  sound-check:
+    build: .
+    container_name: sound-check
+    ports:
+      # Web dashboard
+      - "3400:3000"
+      # OSC input - receives from StreamDeck / Bitfocus Companion
+      - "53538:53538/udp"
+      - "53538:53538/tcp"
+    environment:
+      - WEB_PORT=3000
+      - OSC_LISTEN_PORT=53538
+      # Bridge URL for OSC output to QLab
+      - BRIDGE_URL=http://sound-check-bridge:3401
+      # Base folder where QLab audio files live (mapped below)
+      - TRACK_BASE_PATH=/app/qlab-audio
+      # Admin password for sensitive operations
+      - ADMIN_PASSWORD=8888
+    volumes:
+      # Persistent storage for game state, benchmarks, activity log, pack settings
+      - sound-check-data:/app/data
+      # Host QLab audio folder -> inside container (update host path per machine)
+      - /Users/chrisdevlin/Library/Mobile Documents/com~apple~CloudDocs/Twisted Melon/Installs/MSC/MSC Poesia/QLab Files/Sound Check/audio:/app/qlab-audio:ro
+    depends_on:
+      - sound-check-bridge
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  sound-check-bridge:
+    build: ./bridge
+    container_name: sound-check-bridge
+    environment:
+      - BRIDGE_PORT=3401
+      - QLAB_HOST=host.docker.internal
+      - QLAB_PORT=53000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  sound-check-data:

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Check - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;800;900&family=Syne:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Ambient Background -->
+    <div class="ambient-bg">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
+        <div class="dot-grid"></div>
+        <div class="grain-overlay"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="header-left">
+                <span class="header-title">Sound Check</span>
+                <span class="header-pack" id="headerPack">Loading...</span>
+                <div class="show-status inactive" id="showStatus">
+                    <span class="status-dot disconnected" id="showStatusDot"></span>
+                    <span id="showStatusText">Standby</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="/settings.html" class="btn-secondary" style="font-size:0.75rem;padding:0.4rem 0.8rem;">
+                    <i data-lucide="settings" style="width:14px;height:14px;"></i>
+                    Settings
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Timeline Rail -->
+    <nav class="timeline-rail">
+        <div class="timeline-inner" id="timelineRail">
+            <!-- Populated by JS -->
+        </div>
+    </nav>
+
+    <!-- Score Hero -->
+    <main class="score-hero" id="scoreHero">
+        <div class="score-hero-value" id="scoreValue">0</div>
+        <div class="score-hero-label">Room Score</div>
+        <div class="score-proximity" id="scoreProximity"></div>
+        <div class="benchmark-bar-hero">
+            <div class="benchmark-bar-container">
+                <div class="benchmark-bar-fill" id="benchmarkFill" style="width: 0%"></div>
+            </div>
+            <div class="benchmark-labels">
+                <span>0</span>
+                <span class="target" id="benchmarkTarget">Target: 0</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Score Controls Bar -->
+    <div class="score-controls-bar">
+        <div class="controls-group">
+            <button class="score-btn subtract" onclick="subtractPoints(20)">-20</button>
+            <button class="score-btn subtract" onclick="subtractPoints(50)">-50</button>
+            <button class="score-btn subtract" onclick="subtractPoints(100)">-100</button>
+        </div>
+        <div class="controls-divider"></div>
+        <div class="controls-group custom-group">
+            <button class="score-btn subtract" onclick="subtractCustomPoints()">-</button>
+            <input type="number" id="customPoints" placeholder="Custom" min="1">
+            <button class="score-btn add" onclick="addCustomPoints()">+</button>
+        </div>
+        <div class="controls-divider"></div>
+        <div class="controls-group">
+            <button class="score-btn add" onclick="addPoints(20)">+20</button>
+            <button class="score-btn add" onclick="addPoints(50)">+50</button>
+            <button class="score-btn add" onclick="addPoints(100)">+100</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-left">
+                <div class="footer-info">
+                    <div class="footer-ports">
+                        <span class="footer-port-item">
+                            <i data-lucide="globe" style="width:14px;height:14px;"></i>
+                            Web: <span>3400</span>
+                        </span>
+                        <span class="footer-port-item">
+                            <i data-lucide="radio" style="width:14px;height:14px;"></i>
+                            OSC In: <span>53538</span>
+                        </span>
+                        <span class="footer-port-item">
+                            <i data-lucide="send" style="width:14px;height:14px;"></i>
+                            Bridge: <span>3401</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="footer-status">
+                    <span class="connection-status" id="connectionStatus" aria-live="polite">
+                        <span class="dot"></span>
+                        <span class="message">Connecting to server…</span>
+                    </span>
+                </div>
+            </div>
+            <div class="footer-logo">
+                <a href="https://www.twistedmelon.io" target="_blank" rel="noopener noreferrer">
+                    <img src="twistedmelon_logo.png" alt="Twisted Melon" />
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Reset Modal -->
+    <div id="resetModal" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+                <div style="width:48px;height:48px;background:rgba(239,68,68,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                    <i data-lucide="alert-triangle" style="width:24px;height:24px;color:var(--accent-danger);"></i>
+                </div>
+                <div>
+                    <h3 style="font-size:1.1rem;font-weight:600;margin:0;">Reset Game</h3>
+                    <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;">This will reset the score and round progression</p>
+                </div>
+            </div>
+            <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:1rem;margin-bottom:1.5rem;">
+                <p style="color:var(--accent-danger);font-size:0.85rem;margin:0 0 0.5rem;">Warning:</p>
+                <ul style="color:var(--text-secondary);font-size:0.8rem;margin:0;padding-left:1.2rem;">
+                    <li>Score will reset to 0</li>
+                    <li>Round will reset to Opening</li>
+                    <li>If you beat the benchmark, a new benchmark will be set</li>
+                    <li>Benchmark score is preserved</li>
+                </ul>
+            </div>
+            <div style="display:flex;gap:0.75rem;">
+                <button class="btn-secondary" style="flex:1;" onclick="closeResetModal()">Cancel</button>
+                <button class="btn-primary" style="flex:1;background:var(--accent-danger);" onclick="executeReset()">Reset Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
