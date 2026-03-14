@@ -168,40 +168,7 @@ The web dashboard (`http://localhost:3400`) provides:
 
 The server listens for OSC messages on UDP port `53538`.
 
-### Score control
-
-| OSC Address | Action |
-|---|---|
-| `/sound-check/score/add20` | Add 20 points |
-| `/sound-check/score/add50` | Add 50 points |
-| `/sound-check/score/add100` | Add 100 points |
-| `/sound-check/score/subtract20` | Subtract 20 points |
-| `/sound-check/score/subtract50` | Subtract 50 points |
-| `/sound-check/score/subtract100` | Subtract 100 points |
-| `/sound-check/score/addN` | Add N points (any integer) |
-| `/sound-check/score/subtractN` | Subtract N points (any integer) |
-
-### Round control
-
-| OSC Address | Action |
-|---|---|
-| `/sound-check/round/next` | Advance to next round |
-| `/sound-check/round/previous` | Go back to previous round |
-| `/sound-check/round/set/<N>` | Jump to round number N (0–8) |
-
-### Show control
-
-| OSC Address | Action |
-|---|---|
-| `/sound-check/show/start` | Start the show |
-| `/sound-check/show/stop` | Stop the show |
-| `/sound-check/show/reset` | Reset score and round |
-
-### QLab cue triggers
-
-| OSC Address | Action |
-|---|---|
-| `/sound-check/cue/<N>` | Fire QLab cue N via the bridge |
+See **[OSC_DICTIONARY.md](OSC_DICTIONARY.md)** for the full command reference, including score, round, track, benchmark, and show control commands.
 
 ---
 

@@ -24,21 +24,44 @@ console.log("Configuration:", JSON.stringify(CONFIG, null, 2));
 // Round Definitions
 // =============================================================================
 const ROUNDS = [
-  { id: 0, name: "OPENING", displayName: "Opening", duration: "3-4 min", maxTracks: 1 },
-  { id: 1, name: "SHOUT", displayName: "Round 1 - Shout", duration: "6 min", maxTracks: 3 },
-  { id: 2, name: "EVERYBODY_DANCE_NOW", displayName: "Round 2 - Everybody Dance Now", duration: "6-7 min", maxTracks: 3 },
-  { id: 3, name: "SING_IT_BACK", displayName: "Round 3 - Sing It Back", duration: "7 min", maxTracks: 3 },
+  { id: 0, name: "OPENING", displayName: "Opening", duration: "3-4 min", maxTracks: 0 },
+  { id: 1, name: "SHOUT", displayName: "Round 1 - Shout", duration: "6 min", maxTracks: 8 },
+  { id: 2, name: "EVERYBODY_DANCE_NOW", displayName: "Round 2 - Everybody Dance Now", duration: "6-7 min", maxTracks: 12 },
+  { id: 3, name: "SING_IT_BACK", displayName: "Round 3 - Sing It Back", duration: "7 min", maxTracks: 5 },
   { id: 4, name: "MID_SCORE_REVEAL", displayName: "Mid Show Score Reveal", duration: "2-3 min", maxTracks: 0 },
-  { id: 5, name: "LET_ME_ENTERTAIN_YOU", displayName: "Round 4 - Let Me Entertain You", duration: "7 min", maxTracks: 3 },
-  { id: 6, name: "DO_YOU_REMEMBER", displayName: "Round 5 - Do You Remember The Time", duration: "5-6 min", maxTracks: 5 },
-  { id: 7, name: "ONE_MORE_TIME", displayName: "Final Round - One More Time", duration: "7-8 min", maxTracks: 2 },
+  { id: 5, name: "LET_ME_ENTERTAIN_YOU", displayName: "Round 4 - Let Me Entertain You", duration: "7 min", maxTracks: 11 },
+  { id: 6, name: "DO_YOU_REMEMBER", displayName: "Round 5 - Do You Remember The Time", duration: "5-6 min", maxTracks: 9 },
+  { id: 7, name: "ONE_MORE_TIME", displayName: "Final Round - One More Time", duration: "7-8 min", maxTracks: 10 },
   { id: 8, name: "FINAL_SCORE_REVEAL", displayName: "Final Score Reveal", duration: "3-4 min", maxTracks: 0 },
 ];
 
 // =============================================================================
 // Music Pack System
 // =============================================================================
-const TRACK_CUE_NUMBERS = ["T1", "T2", "T3", "T4", "T5"];
+// QLab cue number offsets per round - T1-T55 sequential across all rounds
+// Round 1: T1-T8, Round 2: T9-T20, Round 3: T21-T25,
+// Round 5: T26-T36, Round 6: T37-T45, Round 7: T46-T55
+const ROUND_CUE_OFFSETS = {
+  1: 0,    // T1-T8   (8 tracks)
+  2: 8,    // T9-T20  (12 tracks)
+  3: 20,   // T21-T25 (5 tracks)
+  5: 25,   // T26-T36 (11 tracks)
+  6: 36,   // T37-T45 (9 tracks)
+  7: 45,   // T46-T55 (10 tracks)
+};
+
+function getTrackCueNumber(round, trackIndex) {
+  const offset = ROUND_CUE_OFFSETS[round];
+  if (offset === undefined) return null;
+  return `T${offset + trackIndex + 1}`;
+}
+
+// QLab cue names for arm/disarm per pack
+const PACK_QLAB_CUES = {
+  "ultimate-singalong": "PACK1",
+  "80s-90s-anthems": "PACK2",
+  floorfillers: "PACK3",
+};
 
 const MUSIC_PACKS = {
   "ultimate-singalong": {
@@ -46,38 +69,74 @@ const MUSIC_PACKS = {
     name: "Ultimate Singalong Classics",
     description: "Cross-generational anthems that bring the whole room together",
     rounds: {
-      0: [{ fileName: "SC_USC_opening.mp3", cueName: "Opening - Singalong Classics" }],
+      0: [],
       1: [
-        { fileName: "SC_USC_R1_T1.mp3", cueName: "Shout Track 1" },
-        { fileName: "SC_USC_R1_T2.mp3", cueName: "Shout Track 2" },
-        { fileName: "SC_USC_R1_T3.mp3", cueName: "Shout Track 3" },
+        { fileName: "SC Pack 1 (Round 1 - Track 1) - Beliver.wav", cueName: "SC Pack 1 (Round 1 - Track 1) - Beliver" },
+        { fileName: "SC Pack 1 (Round 1 - Track 2) - Caroline.wav", cueName: "SC Pack 1 (Round 1 - Track 2) - Caroline" },
+        { fileName: "SC Pack 1 (Round 1 - Track 3) - Champions.wav", cueName: "SC Pack 1 (Round 1 - Track 3) - Champions" },
+        { fileName: "SC Pack 1 (Round 1 - Track 4) - Feeling.wav", cueName: "SC Pack 1 (Round 1 - Track 4) - Feeling" },
+        { fileName: "SC Pack 1 (Round 1 - Track 5) - Jude.wav", cueName: "SC Pack 1 (Round 1 - Track 5) - Jude" },
+        { fileName: "SC Pack 1 (Round 1 - Track 6) - Standing.wav", cueName: "SC Pack 1 (Round 1 - Track 6) - Standing" },
+        { fileName: "SC Pack 1 (Round 1 - Track 7) - Survive.wav", cueName: "SC Pack 1 (Round 1 - Track 7) - Survive" },
+        { fileName: "SC Pack 1 (Round 1 - Track 8) - Valarie.wav", cueName: "SC Pack 1 (Round 1 - Track 8) - Valarie" },
       ],
       2: [
-        { fileName: "SC_USC_R2_T1.mp3", cueName: "Dance Track 1" },
-        { fileName: "SC_USC_R2_T2.mp3", cueName: "Dance Track 2" },
-        { fileName: "SC_USC_R2_T3.mp3", cueName: "Dance Track 3" },
+        { fileName: "SC Pack 1 (Round 2 - Track 1) - Agadoo - Black Lace.wav", cueName: "SC Pack 1 (Round 2 - Track 1) - Agadoo - Black Lace" },
+        { fileName: "SC Pack 1 (Round 2 - Track 2) - Blame it on the Boogie - The Jacksons.wav", cueName: "SC Pack 1 (Round 2 - Track 2) - Blame it on the Boogie - The Jacksons" },
+        { fileName: "SC Pack 1 (Round 2 - Track 3) - Cha Cha Slide.wav", cueName: "SC Pack 1 (Round 2 - Track 3) - Cha Cha Slide" },
+        { fileName: "SC Pack 1 (Round 2 - Track 4) - Cotten Eye Joe - Rednex.wav", cueName: "SC Pack 1 (Round 2 - Track 4) - Cotten Eye Joe - Rednex" },
+        { fileName: "SC Pack 1 (Round 2 - Track 5) - Gangnam Style - PSY.wav", cueName: "SC Pack 1 (Round 2 - Track 5) - Gangnam Style - PSY" },
+        { fileName: "SC Pack 1 (Round 2 - Track 6) - Saturday Night - Whigfield.wav", cueName: "SC Pack 1 (Round 2 - Track 6) - Saturday Night - Whigfield" },
+        { fileName: "SC Pack 1 (Round 2 - Track 7) - The Loco-Motions - Kylie.wav", cueName: "SC Pack 1 (Round 2 - Track 7) - The Loco-Motions - Kylie" },
+        { fileName: "SC Pack 1 (Round 2 - Track 8) - The Time Warp.wav", cueName: "SC Pack 1 (Round 2 - Track 8) - The Time Warp" },
+        { fileName: "SC Pack 1 (Round 2 - Track 9) - Vogue - Madonna.wav", cueName: "SC Pack 1 (Round 2 - Track 9) - Vogue - Madonna" },
+        { fileName: "SC Pack 1 (Round 2 - Track 10) - Walk Like an Egyptian - The Bangles.wav", cueName: "SC Pack 1 (Round 2 - Track 10) - Walk Like an Egyptian - The Bangles" },
+        { fileName: "SC Pack 1 (Round 2 - Track 11) - YMCA - Village People.wav", cueName: "SC Pack 1 (Round 2 - Track 11) - YMCA - Village People" },
+        { fileName: "SC Pack 1 (Round 2 - Track 12) - You Can_t Touch This - MC Hammer.wav", cueName: "SC Pack 1 (Round 2 - Track 12) - You Can_t Touch This - MC Hammer" },
       ],
       3: [
-        { fileName: "SC_USC_R3_T1.mp3", cueName: "Sing It Back Track 1" },
-        { fileName: "SC_USC_R3_T2.mp3", cueName: "Sing It Back Track 2" },
-        { fileName: "SC_USC_R3_T3.mp3", cueName: "Sing It Back Track 3" },
+        { fileName: "SC Pack 1 (Round 3 - Track 1) - Alabama.wav", cueName: "SC Pack 1 (Round 3 - Track 1) - Alabama" },
+        { fileName: "SC Pack 1 (Round 3 - Track 2) - Backstreet Boys.wav", cueName: "SC Pack 1 (Round 3 - Track 2) - Backstreet Boys" },
+        { fileName: "SC Pack 1 (Round 3 - Track 3) - Barbie.wav", cueName: "SC Pack 1 (Round 3 - Track 3) - Barbie" },
+        { fileName: "SC Pack 1 (Round 3 - Track 4) - Teenage Dirtbag.wav", cueName: "SC Pack 1 (Round 3 - Track 4) - Teenage Dirtbag" },
+        { fileName: "SC Pack 1 (Round 3 - Track 5) - Toploader.wav", cueName: "SC Pack 1 (Round 3 - Track 5) - Toploader" },
       ],
       4: [],
       5: [
-        { fileName: "SC_USC_R4_T1.mp3", cueName: "Entertain Track 1" },
-        { fileName: "SC_USC_R4_T2.mp3", cueName: "Entertain Track 2" },
-        { fileName: "SC_USC_R4_T3.mp3", cueName: "Entertain Track 3" },
+        { fileName: "SC Pack 1 (Round 4 - Track 1) - Beyoncé - Crazy In Love (feat. JAY-Z).mp3", cueName: "SC Pack 1 (Round 4 - Track 1) - Beyoncé - Crazy In Love (feat. JAY-Z)" },
+        { fileName: "SC Pack 1 (Round 4 - Track 2) - Britney Spears - Baby One More Time.mp3", cueName: "SC Pack 1 (Round 4 - Track 2) - Britney Spears - Baby One More Time" },
+        { fileName: "SC Pack 1 (Round 4 - Track 3) - Carly Rae Jepsen - Call Me Maybe.mp3", cueName: "SC Pack 1 (Round 4 - Track 3) - Carly Rae Jepsen - Call Me Maybe" },
+        { fileName: "SC Pack 1 (Round 4 - Track 4) - Guns N_ Roses - Sweet Child O_ Mine.mp3", cueName: "SC Pack 1 (Round 4 - Track 4) - Guns N_ Roses - Sweet Child O_ Mine" },
+        { fileName: "SC Pack 1 (Round 4 - Track 5) - Kings Of Leon - Sex on Fire.mp3", cueName: "SC Pack 1 (Round 4 - Track 5) - Kings Of Leon - Sex on Fire" },
+        { fileName: "SC Pack 1 (Round 4 - Track 6) - Ricky Martin - Livin_ la Vida Loca.mp3", cueName: "SC Pack 1 (Round 4 - Track 6) - Ricky Martin - Livin_ la Vida Loca" },
+        { fileName: "SC Pack 1 (Round 4 - Track 7) - Right Said Fred - I_m Too Sexy (2023).mp3", cueName: "SC Pack 1 (Round 4 - Track 7) - Right Said Fred - I_m Too Sexy (2023)" },
+        { fileName: "SC Pack 1 (Round 4 - Track 8) - Robbie Williams - Let Me Entertain You.mp3", cueName: "SC Pack 1 (Round 4 - Track 8) - Robbie Williams - Let Me Entertain You" },
+        { fileName: "SC Pack 1 (Round 4 - Track 9) - Smash Mouth - All Star.mp3", cueName: "SC Pack 1 (Round 4 - Track 9) - Smash Mouth - All Star" },
+        { fileName: "SC Pack 1 (Round 4 - Track 10) - Spice Girls - Wannabe.mp3", cueName: "SC Pack 1 (Round 4 - Track 10) - Spice Girls - Wannabe" },
+        { fileName: "SC Pack 1 (Round 4 - Track 11) - The Proclaimers - I_m Gonna Be (500 Miles).mp3", cueName: "SC Pack 1 (Round 4 - Track 11) - The Proclaimers - I_m Gonna Be (500 Miles)" },
       ],
       6: [
-        { fileName: "SC_USC_R5_T1.mp3", cueName: "Remember Track 1" },
-        { fileName: "SC_USC_R5_T2.mp3", cueName: "Remember Track 2" },
-        { fileName: "SC_USC_R5_T3.mp3", cueName: "Remember Track 3" },
-        { fileName: "SC_USC_R5_T4.mp3", cueName: "Remember Track 4" },
-        { fileName: "SC_USC_R5_T5.mp3", cueName: "Remember Track 5" },
+        { fileName: "SC Pack 1 (Round 5 - Track 1) - Adele - Rolling in the Deep.mp3", cueName: "SC Pack 1 (Round 5 - Track 1) - Adele - Rolling in the Deep" },
+        { fileName: "SC Pack 1 (Round 5 - Track 2) - Avicii - Wake Me Up.mp3", cueName: "SC Pack 1 (Round 5 - Track 2) - Avicii - Wake Me Up" },
+        { fileName: "SC Pack 1 (Round 5 - Track 3) - Ed Sheeran - Shape of You (Stormzy Remix).mp3", cueName: "SC Pack 1 (Round 5 - Track 3) - Ed Sheeran - Shape of You (Stormzy Remix)" },
+        { fileName: "SC Pack 1 (Round 5 - Track 4) - Journey - Don_t Stop Believin_ (2022 Remaster).mp3", cueName: "SC Pack 1 (Round 5 - Track 4) - Journey - Don_t Stop Believin_ (2022 Remaster)" },
+        { fileName: "SC Pack 1 (Round 5 - Track 5) - Katy Perry - Firework.mp3", cueName: "SC Pack 1 (Round 5 - Track 5) - Katy Perry - Firework" },
+        { fileName: "SC Pack 1 (Round 5 - Track 6) - Lady Gaga - Poker Face.mp3", cueName: "SC Pack 1 (Round 5 - Track 6) - Lady Gaga - Poker Face" },
+        { fileName: "SC Pack 1 (Round 5 - Track 7) - Madonna - Like a Prayer.mp3", cueName: "SC Pack 1 (Round 5 - Track 7) - Madonna - Like a Prayer" },
+        { fileName: "SC Pack 1 (Round 5 - Track 8) - Oasis - Wonderwall.mp3", cueName: "SC Pack 1 (Round 5 - Track 8) - Oasis - Wonderwall" },
+        { fileName: "SC Pack 1 (Round 5 - Track 9) - The Weeknd - Blinding Lights.mp3", cueName: "SC Pack 1 (Round 5 - Track 9) - The Weeknd - Blinding Lights" },
       ],
       7: [
-        { fileName: "SC_USC_R6_T1.mp3", cueName: "One More Time Track 1" },
-        { fileName: "SC_USC_R6_T2.mp3", cueName: "One More Time Track 2" },
+        { fileName: "SC Pack 1 (Round 6 - Track 1) - ABBA - Dancing Queen.mp3", cueName: "SC Pack 1 (Round 6 - Track 1) - ABBA - Dancing Queen" },
+        { fileName: "SC Pack 1 (Round 6 - Track 2) - Cher - Believe.mp3", cueName: "SC Pack 1 (Round 6 - Track 2) - Cher - Believe" },
+        { fileName: "SC Pack 1 (Round 6 - Track 3) - Cyndi Lauper - Girls Just Want to Have Fun.mp3", cueName: "SC Pack 1 (Round 6 - Track 3) - Cyndi Lauper - Girls Just Want to Have Fun" },
+        { fileName: "SC Pack 1 (Round 6 - Track 4) - Dolly Parton - 9 to 5.mp3", cueName: "SC Pack 1 (Round 6 - Track 4) - Dolly Parton - 9 to 5" },
+        { fileName: "SC Pack 1 (Round 6 - Track 5) - Eurythmics - Sweet Dreams (Are Made of This) (2005 Remaster).mp3", cueName: "SC Pack 1 (Round 6 - Track 5) - Eurythmics - Sweet Dreams (Are Made of This) (2005 Remaster)" },
+        { fileName: "SC Pack 1 (Round 6 - Track 6) - Imagine Dragons - Believer.mp3", cueName: "SC Pack 1 (Round 6 - Track 6) - Imagine Dragons - Believer" },
+        { fileName: "SC Pack 1 (Round 6 - Track 7) - S Club - Don_t Stop Movin_.mp3", cueName: "SC Pack 1 (Round 6 - Track 7) - S Club - Don_t Stop Movin_" },
+        { fileName: "SC Pack 1 (Round 6 - Track 8) - Starship - We Built This City.mp3", cueName: "SC Pack 1 (Round 6 - Track 8) - Starship - We Built This City" },
+        { fileName: "SC Pack 1 (Round 6 - Track 9) - The Foundations - Build Me Up Buttercup (Stereo).mp3", cueName: "SC Pack 1 (Round 6 - Track 9) - The Foundations - Build Me Up Buttercup (Stereo)" },
+        { fileName: "SC Pack 1 (Round 6 - Track 10) - Vanilla Ice - Ice Ice Baby.mp3", cueName: "SC Pack 1 (Round 6 - Track 10) - Vanilla Ice - Ice Ice Baby" },
       ],
       8: [],
     },
@@ -87,38 +146,74 @@ const MUSIC_PACKS = {
     name: "80s & 90s Anthems",
     description: "High-energy nostalgia from two iconic decades",
     rounds: {
-      0: [{ fileName: "SC_80s_opening.mp3", cueName: "Opening - 80s & 90s Anthems" }],
+      0: [],
       1: [
-        { fileName: "SC_80s_R1_T1.mp3", cueName: "Shout Track 1" },
-        { fileName: "SC_80s_R1_T2.mp3", cueName: "Shout Track 2" },
-        { fileName: "SC_80s_R1_T3.mp3", cueName: "Shout Track 3" },
+        { fileName: "SC Pack 2 (Round 1 - Track 1) - TBC.mp3", cueName: "SC Pack 2 (Round 1 - Track 1) - TBC" },
+        { fileName: "SC Pack 2 (Round 1 - Track 2) - TBC.mp3", cueName: "SC Pack 2 (Round 1 - Track 2) - TBC" },
+        { fileName: "SC Pack 2 (Round 1 - Track 3) - TBC.mp3", cueName: "SC Pack 2 (Round 1 - Track 3) - TBC" },
+        { fileName: "SC Pack 2 (Round 1 - Track 4) - TBC.mp3", cueName: "SC Pack 2 (Round 1 - Track 4) - TBC" },
+        { fileName: "SC Pack 2 (Round 1 - Track 5) - TBC.mp3", cueName: "SC Pack 2 (Round 1 - Track 5) - TBC" },
+        { fileName: "SC Pack 2 (Round 1 - Track 6) - TBC.mp3", cueName: "SC Pack 2 (Round 1 - Track 6) - TBC" },
+        { fileName: "SC Pack 2 (Round 1 - Track 7) - TBC.mp3", cueName: "SC Pack 2 (Round 1 - Track 7) - TBC" },
+        { fileName: "SC Pack 2 (Round 1 - Track 8) - TBC.mp3", cueName: "SC Pack 2 (Round 1 - Track 8) - TBC" },
       ],
       2: [
-        { fileName: "SC_80s_R2_T1.mp3", cueName: "Dance Track 1" },
-        { fileName: "SC_80s_R2_T2.mp3", cueName: "Dance Track 2" },
-        { fileName: "SC_80s_R2_T3.mp3", cueName: "Dance Track 3" },
+        { fileName: "SC Pack 2 (Round 2 - Track 1) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 1) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 2) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 2) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 3) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 3) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 4) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 4) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 5) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 5) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 6) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 6) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 7) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 7) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 8) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 8) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 9) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 9) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 10) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 10) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 11) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 11) - TBC" },
+        { fileName: "SC Pack 2 (Round 2 - Track 12) - TBC.mp3", cueName: "SC Pack 2 (Round 2 - Track 12) - TBC" },
       ],
       3: [
-        { fileName: "SC_80s_R3_T1.mp3", cueName: "Sing It Back Track 1" },
-        { fileName: "SC_80s_R3_T2.mp3", cueName: "Sing It Back Track 2" },
-        { fileName: "SC_80s_R3_T3.mp3", cueName: "Sing It Back Track 3" },
+        { fileName: "SC Pack 2 (Round 3 - Track 1) - TBC.mp3", cueName: "SC Pack 2 (Round 3 - Track 1) - TBC" },
+        { fileName: "SC Pack 2 (Round 3 - Track 2) - TBC.mp3", cueName: "SC Pack 2 (Round 3 - Track 2) - TBC" },
+        { fileName: "SC Pack 2 (Round 3 - Track 3) - TBC.mp3", cueName: "SC Pack 2 (Round 3 - Track 3) - TBC" },
+        { fileName: "SC Pack 2 (Round 3 - Track 4) - TBC.mp3", cueName: "SC Pack 2 (Round 3 - Track 4) - TBC" },
+        { fileName: "SC Pack 2 (Round 3 - Track 5) - TBC.mp3", cueName: "SC Pack 2 (Round 3 - Track 5) - TBC" },
       ],
       4: [],
       5: [
-        { fileName: "SC_80s_R4_T1.mp3", cueName: "Entertain Track 1" },
-        { fileName: "SC_80s_R4_T2.mp3", cueName: "Entertain Track 2" },
-        { fileName: "SC_80s_R4_T3.mp3", cueName: "Entertain Track 3" },
+        { fileName: "SC Pack 2 (Round 4 - Track 1) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 1) - TBC" },
+        { fileName: "SC Pack 2 (Round 4 - Track 2) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 2) - TBC" },
+        { fileName: "SC Pack 2 (Round 4 - Track 3) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 3) - TBC" },
+        { fileName: "SC Pack 2 (Round 4 - Track 4) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 4) - TBC" },
+        { fileName: "SC Pack 2 (Round 4 - Track 5) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 5) - TBC" },
+        { fileName: "SC Pack 2 (Round 4 - Track 6) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 6) - TBC" },
+        { fileName: "SC Pack 2 (Round 4 - Track 7) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 7) - TBC" },
+        { fileName: "SC Pack 2 (Round 4 - Track 8) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 8) - TBC" },
+        { fileName: "SC Pack 2 (Round 4 - Track 9) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 9) - TBC" },
+        { fileName: "SC Pack 2 (Round 4 - Track 10) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 10) - TBC" },
+        { fileName: "SC Pack 2 (Round 4 - Track 11) - TBC.mp3", cueName: "SC Pack 2 (Round 4 - Track 11) - TBC" },
       ],
       6: [
-        { fileName: "SC_80s_R5_T1.mp3", cueName: "Remember Track 1" },
-        { fileName: "SC_80s_R5_T2.mp3", cueName: "Remember Track 2" },
-        { fileName: "SC_80s_R5_T3.mp3", cueName: "Remember Track 3" },
-        { fileName: "SC_80s_R5_T4.mp3", cueName: "Remember Track 4" },
-        { fileName: "SC_80s_R5_T5.mp3", cueName: "Remember Track 5" },
+        { fileName: "SC Pack 2 (Round 5 - Track 1) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 1) - TBC" },
+        { fileName: "SC Pack 2 (Round 5 - Track 2) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 2) - TBC" },
+        { fileName: "SC Pack 2 (Round 5 - Track 3) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 3) - TBC" },
+        { fileName: "SC Pack 2 (Round 5 - Track 4) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 4) - TBC" },
+        { fileName: "SC Pack 2 (Round 5 - Track 5) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 5) - TBC" },
+        { fileName: "SC Pack 2 (Round 5 - Track 6) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 6) - TBC" },
+        { fileName: "SC Pack 2 (Round 5 - Track 7) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 7) - TBC" },
+        { fileName: "SC Pack 2 (Round 5 - Track 8) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 8) - TBC" },
+        { fileName: "SC Pack 2 (Round 5 - Track 9) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 9) - TBC" },
       ],
       7: [
-        { fileName: "SC_80s_R6_T1.mp3", cueName: "One More Time Track 1" },
-        { fileName: "SC_80s_R6_T2.mp3", cueName: "One More Time Track 2" },
+        { fileName: "SC Pack 2 (Round 6 - Track 1) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 1) - TBC" },
+        { fileName: "SC Pack 2 (Round 6 - Track 2) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 2) - TBC" },
+        { fileName: "SC Pack 2 (Round 6 - Track 3) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 3) - TBC" },
+        { fileName: "SC Pack 2 (Round 6 - Track 4) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 4) - TBC" },
+        { fileName: "SC Pack 2 (Round 6 - Track 5) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 5) - TBC" },
+        { fileName: "SC Pack 2 (Round 6 - Track 6) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 6) - TBC" },
+        { fileName: "SC Pack 2 (Round 6 - Track 7) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 7) - TBC" },
+        { fileName: "SC Pack 2 (Round 6 - Track 8) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 8) - TBC" },
+        { fileName: "SC Pack 2 (Round 6 - Track 9) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 9) - TBC" },
+        { fileName: "SC Pack 2 (Round 6 - Track 10) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 10) - TBC" },
       ],
       8: [],
     },
@@ -128,38 +223,74 @@ const MUSIC_PACKS = {
     name: "Floorfillers",
     description: "Upbeat party tracks for maximum participation",
     rounds: {
-      0: [{ fileName: "SC_FF_opening.mp3", cueName: "Opening - Floorfillers" }],
+      0: [],
       1: [
-        { fileName: "SC_FF_R1_T1.mp3", cueName: "Shout Track 1" },
-        { fileName: "SC_FF_R1_T2.mp3", cueName: "Shout Track 2" },
-        { fileName: "SC_FF_R1_T3.mp3", cueName: "Shout Track 3" },
+        { fileName: "SC Pack 3 (Round 1 - Track 1) - TBC.mp3", cueName: "SC Pack 3 (Round 1 - Track 1) - TBC" },
+        { fileName: "SC Pack 3 (Round 1 - Track 2) - TBC.mp3", cueName: "SC Pack 3 (Round 1 - Track 2) - TBC" },
+        { fileName: "SC Pack 3 (Round 1 - Track 3) - TBC.mp3", cueName: "SC Pack 3 (Round 1 - Track 3) - TBC" },
+        { fileName: "SC Pack 3 (Round 1 - Track 4) - TBC.mp3", cueName: "SC Pack 3 (Round 1 - Track 4) - TBC" },
+        { fileName: "SC Pack 3 (Round 1 - Track 5) - TBC.mp3", cueName: "SC Pack 3 (Round 1 - Track 5) - TBC" },
+        { fileName: "SC Pack 3 (Round 1 - Track 6) - TBC.mp3", cueName: "SC Pack 3 (Round 1 - Track 6) - TBC" },
+        { fileName: "SC Pack 3 (Round 1 - Track 7) - TBC.mp3", cueName: "SC Pack 3 (Round 1 - Track 7) - TBC" },
+        { fileName: "SC Pack 3 (Round 1 - Track 8) - TBC.mp3", cueName: "SC Pack 3 (Round 1 - Track 8) - TBC" },
       ],
       2: [
-        { fileName: "SC_FF_R2_T1.mp3", cueName: "Dance Track 1" },
-        { fileName: "SC_FF_R2_T2.mp3", cueName: "Dance Track 2" },
-        { fileName: "SC_FF_R2_T3.mp3", cueName: "Dance Track 3" },
+        { fileName: "SC Pack 3 (Round 2 - Track 1) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 1) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 2) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 2) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 3) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 3) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 4) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 4) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 5) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 5) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 6) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 6) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 7) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 7) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 8) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 8) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 9) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 9) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 10) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 10) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 11) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 11) - TBC" },
+        { fileName: "SC Pack 3 (Round 2 - Track 12) - TBC.mp3", cueName: "SC Pack 3 (Round 2 - Track 12) - TBC" },
       ],
       3: [
-        { fileName: "SC_FF_R3_T1.mp3", cueName: "Sing It Back Track 1" },
-        { fileName: "SC_FF_R3_T2.mp3", cueName: "Sing It Back Track 2" },
-        { fileName: "SC_FF_R3_T3.mp3", cueName: "Sing It Back Track 3" },
+        { fileName: "SC Pack 3 (Round 3 - Track 1) - TBC.mp3", cueName: "SC Pack 3 (Round 3 - Track 1) - TBC" },
+        { fileName: "SC Pack 3 (Round 3 - Track 2) - TBC.mp3", cueName: "SC Pack 3 (Round 3 - Track 2) - TBC" },
+        { fileName: "SC Pack 3 (Round 3 - Track 3) - TBC.mp3", cueName: "SC Pack 3 (Round 3 - Track 3) - TBC" },
+        { fileName: "SC Pack 3 (Round 3 - Track 4) - TBC.mp3", cueName: "SC Pack 3 (Round 3 - Track 4) - TBC" },
+        { fileName: "SC Pack 3 (Round 3 - Track 5) - TBC.mp3", cueName: "SC Pack 3 (Round 3 - Track 5) - TBC" },
       ],
       4: [],
       5: [
-        { fileName: "SC_FF_R4_T1.mp3", cueName: "Entertain Track 1" },
-        { fileName: "SC_FF_R4_T2.mp3", cueName: "Entertain Track 2" },
-        { fileName: "SC_FF_R4_T3.mp3", cueName: "Entertain Track 3" },
+        { fileName: "SC Pack 3 (Round 4 - Track 1) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 1) - TBC" },
+        { fileName: "SC Pack 3 (Round 4 - Track 2) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 2) - TBC" },
+        { fileName: "SC Pack 3 (Round 4 - Track 3) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 3) - TBC" },
+        { fileName: "SC Pack 3 (Round 4 - Track 4) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 4) - TBC" },
+        { fileName: "SC Pack 3 (Round 4 - Track 5) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 5) - TBC" },
+        { fileName: "SC Pack 3 (Round 4 - Track 6) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 6) - TBC" },
+        { fileName: "SC Pack 3 (Round 4 - Track 7) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 7) - TBC" },
+        { fileName: "SC Pack 3 (Round 4 - Track 8) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 8) - TBC" },
+        { fileName: "SC Pack 3 (Round 4 - Track 9) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 9) - TBC" },
+        { fileName: "SC Pack 3 (Round 4 - Track 10) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 10) - TBC" },
+        { fileName: "SC Pack 3 (Round 4 - Track 11) - TBC.mp3", cueName: "SC Pack 3 (Round 4 - Track 11) - TBC" },
       ],
       6: [
-        { fileName: "SC_FF_R5_T1.mp3", cueName: "Remember Track 1" },
-        { fileName: "SC_FF_R5_T2.mp3", cueName: "Remember Track 2" },
-        { fileName: "SC_FF_R5_T3.mp3", cueName: "Remember Track 3" },
-        { fileName: "SC_FF_R5_T4.mp3", cueName: "Remember Track 4" },
-        { fileName: "SC_FF_R5_T5.mp3", cueName: "Remember Track 5" },
+        { fileName: "SC Pack 3 (Round 5 - Track 1) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 1) - TBC" },
+        { fileName: "SC Pack 3 (Round 5 - Track 2) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 2) - TBC" },
+        { fileName: "SC Pack 3 (Round 5 - Track 3) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 3) - TBC" },
+        { fileName: "SC Pack 3 (Round 5 - Track 4) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 4) - TBC" },
+        { fileName: "SC Pack 3 (Round 5 - Track 5) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 5) - TBC" },
+        { fileName: "SC Pack 3 (Round 5 - Track 6) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 6) - TBC" },
+        { fileName: "SC Pack 3 (Round 5 - Track 7) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 7) - TBC" },
+        { fileName: "SC Pack 3 (Round 5 - Track 8) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 8) - TBC" },
+        { fileName: "SC Pack 3 (Round 5 - Track 9) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 9) - TBC" },
       ],
       7: [
-        { fileName: "SC_FF_R6_T1.mp3", cueName: "One More Time Track 1" },
-        { fileName: "SC_FF_R6_T2.mp3", cueName: "One More Time Track 2" },
+        { fileName: "SC Pack 3 (Round 6 - Track 1) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 1) - TBC" },
+        { fileName: "SC Pack 3 (Round 6 - Track 2) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 2) - TBC" },
+        { fileName: "SC Pack 3 (Round 6 - Track 3) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 3) - TBC" },
+        { fileName: "SC Pack 3 (Round 6 - Track 4) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 4) - TBC" },
+        { fileName: "SC Pack 3 (Round 6 - Track 5) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 5) - TBC" },
+        { fileName: "SC Pack 3 (Round 6 - Track 6) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 6) - TBC" },
+        { fileName: "SC Pack 3 (Round 6 - Track 7) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 7) - TBC" },
+        { fileName: "SC Pack 3 (Round 6 - Track 8) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 8) - TBC" },
+        { fileName: "SC Pack 3 (Round 6 - Track 9) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 9) - TBC" },
+        { fileName: "SC Pack 3 (Round 6 - Track 10) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 10) - TBC" },
       ],
       8: [],
     },
@@ -476,6 +607,7 @@ function resetGame(source = "system") {
   saveGameState();
   logActivity("game_reset", "Full game reset", source);
   updateQLabScoreText(0);
+  updateQLabBenchmarkText(gameState.benchmark);
   return gameState;
 }
 
@@ -498,15 +630,15 @@ function playTrack(trackNumber, source = "system") {
 
   const track = tracks[trackIndex];
   const fullFilePath = path.join(CONFIG.TRACK_BASE_PATH, track.fileName);
-  const cueNumber = TRACK_CUE_NUMBERS[trackIndex];
-
-  // Send file path to QLab (if file exists in mapped volume)
-  if (fs.existsSync(fullFilePath)) {
-    sendOSCToBridge(`/cue/${cueNumber}/fileTarget`, fullFilePath);
-  } else {
-    console.warn(`[TRACK] Audio file not found: ${fullFilePath} — sending path anyway`);
-    sendOSCToBridge(`/cue/${cueNumber}/fileTarget`, fullFilePath);
+  const cueNumber = getTrackCueNumber(gameState.currentRound, trackIndex);
+  if (!cueNumber) {
+    console.log(`[TRACK] No cue number mapping for round ${gameState.currentRound}, track ${trackIndex}`);
+    return null;
   }
+
+  // Send file path to QLab
+  console.log(`[TRACK] ${cueNumber}: File: ${fullFilePath}`);
+  sendOSCToBridge(`/cue/${cueNumber}/fileTarget`, fullFilePath);
 
   // Set cue name
   sendOSCToBridge(`/cue/${cueNumber}/name`, track.cueName);
@@ -524,10 +656,12 @@ function playTrack(trackNumber, source = "system") {
 }
 
 function stopTrack(source = "system") {
-  // Stop all track cues
-  for (const cueNumber of TRACK_CUE_NUMBERS) {
-    sendOSCToBridge(`/cue/${cueNumber}/stop`, 0);
-  }
+  // Stop all track cues for current round
+  const tracks = getTracksForCurrentRound();
+  tracks.forEach((_, index) => {
+    const cueNumber = getTrackCueNumber(gameState.currentRound, index);
+    if (cueNumber) sendOSCToBridge(`/cue/${cueNumber}/stop`, 0);
+  });
   gameState.currentTrack = 0;
   gameState.lastUpdated = new Date().toISOString();
   saveGameState();
@@ -544,7 +678,8 @@ function playNextTrack(source = "system") {
   return null;
 }
 
-// Update all track cues for a pack (sends file paths and names to QLab)
+// Update ALL track cues for a pack (T1-T55) across ALL rounds
+// Sends immediately on pack change - no delays, no round dependency
 function updateTrackCuesForPack(packId) {
   const pack = MUSIC_PACKS[packId];
   if (!pack) {
@@ -552,24 +687,32 @@ function updateTrackCuesForPack(packId) {
     return;
   }
 
-  // Update tracks for current round
-  const tracks = pack.rounds[gameState.currentRound] || [];
-  console.log(`[PACK] Updating ${tracks.length} track cues for ${packId}, round ${gameState.currentRound}`);
+  console.log(`[PACK] Updating all track cues for pack: ${packId}`);
+  let totalTracks = 0;
 
-  tracks.forEach((trackConfig, index) => {
-    const cueNumber = TRACK_CUE_NUMBERS[index];
-    const fullFilePath = path.join(CONFIG.TRACK_BASE_PATH, trackConfig.fileName);
+  // Iterate ALL rounds that have tracks
+  Object.keys(pack.rounds).forEach((roundKey) => {
+    const round = parseInt(roundKey);
+    const tracks = pack.rounds[round] || [];
+    if (tracks.length === 0) return;
 
-    if (fs.existsSync(fullFilePath)) {
+    tracks.forEach((trackConfig, index) => {
+      const cueNumber = getTrackCueNumber(round, index);
+      if (!cueNumber) return;
+
+      const fullFilePath = path.join(CONFIG.TRACK_BASE_PATH, trackConfig.fileName);
+
       console.log(`[PACK]   ${cueNumber}: File: ${fullFilePath}`);
       sendOSCToBridge(`/cue/${cueNumber}/fileTarget`, fullFilePath);
-    } else {
-      console.warn(`[PACK]   ${cueNumber}: Missing file: ${fullFilePath}`);
-    }
 
-    console.log(`[PACK]   ${cueNumber}: Name: ${trackConfig.cueName}`);
-    sendOSCToBridge(`/cue/${cueNumber}/name`, trackConfig.cueName);
+      console.log(`[PACK]   ${cueNumber}: Name: ${trackConfig.cueName}`);
+      sendOSCToBridge(`/cue/${cueNumber}/name`, trackConfig.cueName);
+
+      totalTracks++;
+    });
   });
+
+  console.log(`[PACK] Sent updates for ${totalTracks} track cues (T1-T${totalTracks})`);
 }
 
 // =============================================================================
@@ -768,6 +911,7 @@ app.post("/api/pack-settings", (req, res) => {
   };
   savePackSettings();
   updateTrackCuesForPack(currentPack);
+  armDisarmPackCues(currentPack);
   io.emit("packChanged", { packId: currentPack, packInfo: { id: currentPack, name: MUSIC_PACKS[currentPack].name } });
   logActivity("pack_change", `Pack changed from ${oldPack} to ${currentPack}`, "api");
   res.json({ success: true, ...packSettings });
@@ -1025,6 +1169,25 @@ function handleOscMessage(address, args) {
     return;
   }
 
+  // Individual round by number: /sound-check/round/1, /sound-check/round/2, etc.
+  const roundDirectMatch = address.match(/^\/sound-check\/round\/(\d+)$/);
+  if (roundDirectMatch) {
+    const round = parseInt(roundDirectMatch[1]);
+    const state = setRound(round, "osc");
+    io.emit("stateUpdate", buildStatePayload());
+    io.emit("roundChanged", { round: state.currentRound, roundInfo: ROUNDS[state.currentRound] });
+    return;
+  }
+
+  // Individual round by name: /sound-check/round/shout, /sound-check/round/opening, etc.
+  const roundByName = ROUNDS.find((r) => address === `/sound-check/round/${r.name.toLowerCase()}`);
+  if (roundByName) {
+    const state = setRound(roundByName.id, "osc");
+    io.emit("stateUpdate", buildStatePayload());
+    io.emit("roundChanged", { round: state.currentRound, roundInfo: ROUNDS[state.currentRound] });
+    return;
+  }
+
   // === Track commands ===
   const trackPlayMatch = address.match(/^\/sound-check\/track\/play\/(\d+)$/);
   if (trackPlayMatch) {
@@ -1122,13 +1285,13 @@ udpServer.on("message", (msg, rinfo) => {
     const oscMsg = osc.readPacket(msg, { metadata: true });
     console.log(`[OSC IN] ${oscMsg.address}`, oscMsg.args || [], `from ${rinfo.address}:${rinfo.port}`);
     const args = oscMsg.args ? oscMsg.args.map((a) => (a.value !== undefined ? a.value : a)) : [];
-    handleOscMessage(oscMsg.address, args);
+    handleOscMessage(oscMsg.address.trim(), args);
   } catch (err) {
     console.log(`[OSC IN RAW] ${msg.length} bytes from ${rinfo.address}:${rinfo.port} (parse error: ${err.message})`);
     const addr = parseOscAddress(msg);
     const args = parseOscArgs(msg);
     console.log(`[OSC IN RAW] Extracted address: "${addr}", args:`, args);
-    handleOscMessage(addr, args);
+    handleOscMessage(addr.trim(), args);
   }
 });
 
@@ -1194,6 +1357,24 @@ function stopQLabCue(cueName) {
   sendOSCToBridge(`/cue/${cueName}/stop`, 0);
 }
 
+// Arm/disarm QLab cues based on selected pack
+function armDisarmPackCues(selectedPackId) {
+  const allPackIds = Object.keys(PACK_QLAB_CUES);
+
+  allPackIds.forEach((packId) => {
+    const qlabCueName = PACK_QLAB_CUES[packId];
+    if (packId === selectedPackId) {
+      // Arm the selected pack: armed = 1
+      sendOSCToBridge(`/cue/${qlabCueName}/armed`, 1);
+      console.log(`[QLAB] Armed cue: ${qlabCueName}`);
+    } else {
+      // Disarm the other packs: armed = 0
+      sendOSCToBridge(`/cue/${qlabCueName}/armed`, 0);
+      console.log(`[QLAB] Disarmed cue: ${qlabCueName}`);
+    }
+  });
+}
+
 // =============================================================================
 // Start Server
 // =============================================================================
@@ -1202,5 +1383,11 @@ server.listen(CONFIG.WEB_PORT, "0.0.0.0", () => {
   console.log(`[OSC] Listening for commands on port ${CONFIG.OSC_LISTEN_PORT}`);
   console.log(`[PACK] Current pack: ${packSettings.currentPack}`);
   console.log(`[GAME] Current score: ${gameState.score}, benchmark: ${gameState.benchmark}`);
+
+  // Sync QLab on startup
+  armDisarmPackCues(packSettings.currentPack);
+  updateQLabScoreText(gameState.score);
+  updateQLabBenchmarkText(gameState.benchmark);
+
   console.log("=== Sound Check Ready ===");
 });

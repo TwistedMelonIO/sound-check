@@ -124,46 +124,6 @@
             border-bottom: 1px solid var(--border-primary);
         }
 
-        .osc-table {
-            width: 100%;
-            font-size: 0.75rem;
-        }
-
-        .osc-table th {
-            text-align: left;
-            padding: 0.4rem 0.75rem;
-            color: var(--text-tertiary);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 0.65rem;
-            border-bottom: 1px solid var(--border-primary);
-        }
-
-        .osc-table td {
-            padding: 0.4rem 0.75rem;
-            border-bottom: 1px solid var(--border-primary);
-        }
-
-        .osc-table td:first-child {
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--accent-primary);
-            font-size: 0.7rem;
-        }
-
-        .osc-table td:last-child {
-            color: var(--text-secondary);
-        }
-
-        .osc-section-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            padding: 0.6rem 0.75rem 0.3rem;
-        }
-
         .activity-log-table {
             width: 100%;
             font-size: 0.75rem;
@@ -264,9 +224,6 @@
                 <div class="card-body" id="packSelection">
                     <!-- Populated by JS -->
                 </div>
-                <div style="padding:0 1rem 1rem;">
-                    <button class="btn-primary" id="savePackBtn" style="width:100%;" onclick="savePack()">Save Pack Selection</button>
-                </div>
             </div>
         </div>
 
@@ -296,58 +253,6 @@
                     <div id="benchmarkHistory">
                         <p style="font-size:0.8rem;color:var(--text-tertiary);">No history yet</p>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- OSC Command Reference -->
-        <div class="settings-section">
-            <h2>
-                <i data-lucide="terminal" style="width:18px;height:18px;color:var(--accent-success);"></i>
-                OSC Command Reference
-            </h2>
-            <div class="card">
-                <div class="card-body" style="padding:0;">
-                    <div style="padding:1rem;border-bottom:1px solid var(--border-primary);">
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.8rem;">
-                            <div><span style="color:var(--text-tertiary);">Listen Port:</span> <strong>53538</strong> (UDP/TCP)</div>
-                            <div><span style="color:var(--text-tertiary);">QLab Target:</span> <strong>53000</strong> (via bridge)</div>
-                        </div>
-                    </div>
-                    <table class="osc-table">
-                        <thead>
-                            <tr><th>OSC Address</th><th>Description</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="2" class="osc-section-label">Score Commands</td></tr>
-                            <tr><td>/sound-check/score/add/{N}</td><td>Add N points</td></tr>
-                            <tr><td>/sound-check/score/subtract/{N}</td><td>Subtract N points</td></tr>
-                            <tr><td>/sound-check/score/set/{N}</td><td>Set score to N</td></tr>
-                            <tr><td>/sound-check/score/reset</td><td>Reset score to 0</td></tr>
-                            <tr><td>/sound-check/score/add20</td><td>Quick add 20 points</td></tr>
-                            <tr><td>/sound-check/score/add50</td><td>Quick add 50 points</td></tr>
-                            <tr><td>/sound-check/score/add100</td><td>Quick add 100 points</td></tr>
-                            <tr><td>/sound-check/score/subtract20</td><td>Quick subtract 20 points</td></tr>
-                            <tr><td>/sound-check/score/subtract50</td><td>Quick subtract 50 points</td></tr>
-                            <tr><td>/sound-check/score/subtract100</td><td>Quick subtract 100 points</td></tr>
-                            <tr><td colspan="2" class="osc-section-label">Round Commands</td></tr>
-                            <tr><td>/sound-check/round/next</td><td>Advance to next round</td></tr>
-                            <tr><td>/sound-check/round/previous</td><td>Go back one round</td></tr>
-                            <tr><td>/sound-check/round/set/{N}</td><td>Jump to round N (0-8)</td></tr>
-                            <tr><td colspan="2" class="osc-section-label">Track Commands</td></tr>
-                            <tr><td>/sound-check/track/play/{N}</td><td>Play track N in current round</td></tr>
-                            <tr><td>/sound-check/track/stop</td><td>Stop current track</td></tr>
-                            <tr><td>/sound-check/track/next</td><td>Play next track</td></tr>
-                            <tr><td colspan="2" class="osc-section-label">Benchmark & Reveal</td></tr>
-                            <tr><td>/sound-check/benchmark/reveal</td><td>Trigger benchmark reveal in QLab</td></tr>
-                            <tr><td>/sound-check/benchmark/set/{N}</td><td>Set benchmark to N</td></tr>
-                            <tr><td>/sound-check/score/reveal</td><td>Trigger score reveal in QLab</td></tr>
-                            <tr><td colspan="2" class="osc-section-label">Show Control</td></tr>
-                            <tr><td>/sound-check/start</td><td>Start the show</td></tr>
-                            <tr><td>/sound-check/stop</td><td>End the show</td></tr>
-                            <tr><td>/sound-check/reset</td><td>Full game reset</td></tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
