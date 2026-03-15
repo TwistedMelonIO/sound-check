@@ -120,3 +120,16 @@ These are sent **automatically by the server** — you do not trigger them manua
 | `/sound-check/round/7` | R6 | Round 6 |
 | `/sound-check/round/8` | Final | Final Round – One More Time |
 | `/sound-check/round/9` | End | Final Score Reveal |
+
+---
+
+## QLab Track Cue Map
+
+| Round | QLab Cues | Slots | Existing Tracks |
+|---|---|---|---|
+| R1 – Shout | T1–T15 | 15 | 8 |
+| R2 – Everybody Dance Now | T16–T30 | 15 | 12 |
+| R3 – Sing It Back | T31–T45 | 15 | 5 |
+| R4 – Let Me Entertain You | T46–T60 | 15 | 11 |
+| R5 – Do You Remember | T61–T85 | 25 | 9 |
+| R6 – Final (One More Time) | T86–T100 | 15 | 10 |

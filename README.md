@@ -2,7 +2,7 @@
 
 **Live music gameshow scoring system with QLab OSC integration**
 
-**Latest Version:** v1.2.0 — Setup script, Round 6 support, activity log, pack sync, win/lose automation.
+**Latest Version:** v1.3.0 — Expanded QLab cue map (T1–T100) with future track slots for all rounds.
 
 Built by [Twisted Melon](https://www.twistedmelon.io) for use in live entertainment events. Sound Check runs as a Docker container, serving a real-time web dashboard that lets operators track scores, progress through rounds, and trigger QLab audio cues — all from any device on the local network.
 
@@ -128,6 +128,23 @@ Sound Check is built around 9 fixed rounds:
 | 6 | DO_YOU_REMEMBER | Round 5 – Do You Remember The Time | 5–6 min |
 | 7 | ONE_MORE_TIME | Final Round – One More Time | 7–8 min |
 | 8 | FINAL_SCORE_REVEAL | Final Score Reveal | 3–4 min |
+
+---
+
+## QLab Track Cue Map
+
+Each playable round has a reserved block of QLab cue numbers. Existing tracks are populated; future slots are pre-allocated for expansion.
+
+| Round | QLab Cues | Slots | Existing Tracks | Future Slots |
+|---|---|---|---|---|
+| R1 – Shout | T1–T15 | 15 | 8 | T9–T15 |
+| R2 – Everybody Dance Now | T16–T30 | 15 | 12 | T28–T30 |
+| R3 – Sing It Back | T31–T45 | 15 | 5 | T36–T45 |
+| R4 – Let Me Entertain You | T46–T60 | 15 | 11 | T57–T60 |
+| R5 – Do You Remember | T61–T85 | 25 | 9 | T70–T85 |
+| R6 – Final (One More Time) | T86–T100 | 15 | 10 | T96–T100 |
+
+**Total: 100 cue slots** (55 existing tracks + 45 future slots)
 
 ---
 

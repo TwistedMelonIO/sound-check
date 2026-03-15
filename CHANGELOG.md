@@ -4,6 +4,17 @@ All notable changes to Sound Check are documented here.
 
 ---
 
+## [1.3.0] — 2026-03-15
+
+### Changed
+- **Expanded QLab cue map** — track cue numbering expanded from T1–T55 to T1–T100, pre-allocating future track slots for all rounds
+- Round cue offsets updated: R1→0, R2→15, R3→30, R4→45, R5→60, R6→85 (previously R1→0, R2→8, R3→20, R4→25, R5→36, R6→45)
+- Target track counts per round: R1=15, R2=15, R3=15, R4=15, R5=25, R6=15
+- OSC Dictionary updated with QLab Track Cue Map reference table
+- README updated with full cue map including future slot ranges
+
+---
+
 ## [1.2.0] — 2026-03-15
 
 ### Added

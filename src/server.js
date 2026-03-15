@@ -43,12 +43,12 @@ const ROUNDS = [
 // Round 1 (idx 1): T1-T8, Round 2 (idx 2): T9-T20, Round 3 (idx 3): T21-T25,
 // Round 4 (idx 5): T26-T36, Round 5 (idx 6): T37-T45, Round 6 (idx 7): (TBD), Final (idx 8): T46-T55
 const ROUND_CUE_OFFSETS = {
-  1: 0,    // T1-T8   (8 tracks)
-  2: 8,    // T9-T20  (12 tracks)
-  3: 20,   // T21-T25 (5 tracks)
-  5: 25,   // T26-T36 (11 tracks)
-  6: 36,   // T37-T45 (9 tracks)
-  8: 45,   // T46-T55 (10 tracks)  — Final Round (idx shifted from 7→8)
+  1: 0,    // T1-T15   (15 slots, 8 existing tracks)
+  2: 15,   // T16-T30  (15 slots, 12 existing tracks)
+  3: 30,   // T31-T45  (15 slots, 5 existing tracks)
+  5: 45,   // T46-T60  (15 slots, 11 existing tracks)
+  6: 60,   // T61-T85  (25 slots, 9 existing tracks)
+  8: 85,   // T86-T100 (15 slots, 10 existing tracks) — Final Round
 };
 
 function getTrackCueNumber(round, trackIndex) {
@@ -682,7 +682,7 @@ function playNextTrack(source = "system") {
   return null;
 }
 
-// Update ALL track cues for a pack (T1-T55) across ALL rounds
+// Update ALL track cues for a pack (T1-T100) across ALL rounds
 // Sends immediately on pack change - no delays, no round dependency
 function updateTrackCuesForPack(packId) {
   const pack = MUSIC_PACKS[packId];
@@ -1373,10 +1373,12 @@ function sendOSCToBridge(address, value) {
 
 function updateQLabScoreText(score) {
   sendOSCToBridge("/cue/SCORE/text", String(score));
+  sendOSCToBridge("/cue/FINALSCORE/text", String(score));
 }
 
 function updateQLabBenchmarkText(benchmark) {
   sendOSCToBridge("/cue/BENCHMARK/text", String(benchmark));
+  sendOSCToBridge("/cue/FINALBENCHMARK/text", String(benchmark));
 }
 
 function triggerQLabCue(cueName) {
