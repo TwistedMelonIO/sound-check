@@ -34,7 +34,7 @@ Game state (score, round, benchmark, activity log) is persisted to a named Docke
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/twistedmelon/sound-check.git
+git clone https://github.com/TwistedMelonIO/sound-check.git
 cd sound-check
 ```
 
