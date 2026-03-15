@@ -24,6 +24,10 @@ document.addEventListener("DOMContentLoaded", function () {
     updateBenchmarkProgress(state.score, state.benchmark);
     renderBenchmarkHistory(benchHistory);
     renderActivityStats(activity);
+    if (state.version) {
+      const versionEl = document.getElementById("appVersion");
+      if (versionEl) versionEl.textContent = "v" + state.version;
+    }
   });
 
   // =============================================================================

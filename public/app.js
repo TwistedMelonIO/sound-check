@@ -104,6 +104,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (state.currentPackInfo) {
       document.getElementById("headerPack").textContent = state.currentPackInfo.name;
     }
+    if (state.version) {
+      const versionEl = document.getElementById("appVersion");
+      if (versionEl) versionEl.textContent = "v" + state.version;
+    }
   }
 
   function updateConnectionStatus(connected) {

@@ -9,6 +9,8 @@ const fs = require("fs");
 // =============================================================================
 // Configuration
 // =============================================================================
+const APP_VERSION = require("../package.json").version;
+
 const CONFIG = {
   WEB_PORT: parseInt(process.env.WEB_PORT) || 3000,
   OSC_LISTEN_PORT: parseInt(process.env.OSC_LISTEN_PORT) || 53538,
@@ -736,13 +738,7 @@ app.get("/health", (req, res) => {
 
 // Full state
 app.get("/api/state", (req, res) => {
-  res.json({
-    ...gameState,
-    currentRoundInfo: ROUNDS[gameState.currentRound],
-    currentPackInfo: MUSIC_PACKS[packSettings.currentPack]
-      ? { id: packSettings.currentPack, name: MUSIC_PACKS[packSettings.currentPack].name, description: MUSIC_PACKS[packSettings.currentPack].description }
-      : null,
-  });
+  res.json(buildStatePayload());
 });
 
 // Rounds
@@ -949,6 +945,7 @@ app.post("/api/activity/reset", (req, res) => {
 function buildStatePayload() {
   return {
     ...gameState,
+    version: APP_VERSION,
     currentRoundInfo: ROUNDS[gameState.currentRound],
     currentPackInfo: MUSIC_PACKS[packSettings.currentPack]
       ? { id: packSettings.currentPack, name: MUSIC_PACKS[packSettings.currentPack].name, description: MUSIC_PACKS[packSettings.currentPack].description }
