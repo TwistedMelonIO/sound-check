@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentPack = "";
   let selectedPack = "";
   let allPacks = [];
-  let currentFilter = "all";
+  let currentState = { score: 0, benchmark: 0 };
 
   // =============================================================================
   // Load initial data
@@ -12,16 +12,18 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch("/api/pack-settings").then((r) => r.json()),
     fetch("/api/state").then((r) => r.json()),
     fetch("/api/benchmark-history").then((r) => r.json()),
-    fetch("/api/activity?limit=200").then((r) => r.json()),
+    fetch("/api/activity?limit=1000").then((r) => r.json()),
   ]).then(([packs, packSettings, state, benchHistory, activity]) => {
     allPacks = packs;
     currentPack = packSettings.currentPack;
     selectedPack = currentPack;
     renderPackSelection(packs, currentPack);
+    currentState = state;
     document.getElementById("currentBenchmark").textContent = state.benchmark;
     document.getElementById("currentScore").textContent = state.score;
+    updateBenchmarkProgress(state.score, state.benchmark);
     renderBenchmarkHistory(benchHistory);
-    renderActivityLog(activity);
+    renderActivityStats(activity);
   });
 
   // =============================================================================
@@ -31,13 +33,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const container = document.getElementById("packSelection");
     container.innerHTML = packs
       .map(
-        (pack) => `
+        (pack, i) => `
       <div class="pack-card ${pack.id === current ? "selected" : ""}"
            data-pack="${pack.id}"
            onclick="selectPack('${pack.id}')">
-        <div class="pack-card-title">${pack.name}</div>
-        <div class="pack-card-desc">${pack.description}</div>
-        ${pack.id === current ? '<div class="pack-card-badge">Current</div>' : ""}
+        <div class="pack-card-num">${String(i + 1).padStart(2, "0")}</div>
+        <div class="pack-card-info">
+          <div class="pack-card-title">${pack.name}</div>
+          <div class="pack-card-desc">${pack.description}</div>
+        </div>
+        <div class="pack-card-check"></div>
       </div>
     `
       )
@@ -50,10 +55,6 @@ document.addEventListener("DOMContentLoaded", function () {
     cards.forEach((card) => {
       card.classList.toggle("selected", card.dataset.pack === packId);
     });
-  };
-
-  window.savePack = function () {
-    if (!selectedPack) return;
     fetch("/api/pack-settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -64,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (data.success) {
           currentPack = selectedPack;
           renderPackSelection(allPacks, currentPack);
-          showNotification("Pack saved successfully");
+          showNotification("Pack saved");
         }
       })
       .catch(() => showNotification("Failed to save pack", true));
@@ -73,6 +74,17 @@ document.addEventListener("DOMContentLoaded", function () {
   // =============================================================================
   // Benchmark
   // =============================================================================
+  function updateBenchmarkProgress(score, benchmark) {
+    const fill = document.getElementById("benchProgressFill");
+    const pct = document.getElementById("benchProgressPct");
+    if (!fill || !pct) return;
+    const ratio = benchmark > 0 ? Math.min(score / benchmark, 1) : 0;
+    const display = benchmark > 0 ? Math.round((score / benchmark) * 100) : 0;
+    fill.style.width = ratio * 100 + "%";
+    fill.classList.toggle("over", score >= benchmark && benchmark > 0);
+    pct.textContent = display + "%";
+  }
+
   window.setBenchmark = function () {
     const input = document.getElementById("benchmarkInput");
     const value = parseInt(input.value);
@@ -87,8 +99,13 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((data) => {
         if (data.success) {
           document.getElementById("currentBenchmark").textContent = data.benchmark;
+          currentState.benchmark = data.benchmark;
+          updateBenchmarkProgress(currentState.score, data.benchmark);
           input.value = "";
           showNotification(`Benchmark set to ${data.benchmark}`);
+          fetch("/api/benchmark-history")
+            .then((r) => r.json())
+            .then((h) => renderBenchmarkHistory(h));
         }
       })
       .catch(() => showNotification("Failed to set benchmark", true));
@@ -97,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function renderBenchmarkHistory(history) {
     const container = document.getElementById("benchmarkHistory");
     if (!history || history.length === 0) {
-      container.innerHTML = '<p style="font-size:0.8rem;color:var(--text-tertiary);">No benchmark history yet</p>';
+      container.innerHTML = '<p style="font-size:0.75rem;color:var(--text-tertiary);">No benchmark history yet</p>';
       return;
     }
 
@@ -107,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <tr><th>Date</th><th>Previous</th><th>New</th><th>Pack</th></tr>
         </thead>
         <tbody>
-          ${history
+          ${[...history]
             .reverse()
             .map(
               (entry) => `
@@ -126,104 +143,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // =============================================================================
-  // Activity Log
+  // Activity stats (summary only)
   // =============================================================================
-  function renderActivityLog(activities) {
-    const body = document.getElementById("activityLogBody");
-    const filtered = currentFilter === "all" ? activities : activities.filter((a) => a.type.includes(currentFilter));
-
-    if (filtered.length === 0) {
-      body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-tertiary);padding:2rem;">No activity entries</td></tr>';
-      return;
-    }
-
-    body.innerHTML = filtered
-      .reverse()
-      .map(
-        (entry) => `
-      <tr>
-        <td style="white-space:nowrap;font-variant-numeric:tabular-nums;">${new Date(entry.timestamp).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", second: "2-digit" })}</td>
-        <td><span class="activity-type ${getTypeClass(entry.type)}">${entry.type}</span></td>
-        <td>${entry.details}</td>
-        <td>${entry.source}</td>
-      </tr>
-    `
-      )
-      .join("");
+  function renderActivityStats(activities) {
+    const totalEl = document.getElementById("activityTotalCount");
+    const scoreEl = document.getElementById("activityScoreCount");
+    if (totalEl) totalEl.textContent = activities.length;
+    if (scoreEl) scoreEl.textContent = activities.filter((a) => a.type.includes("score")).length;
   }
-
-  function getTypeClass(type) {
-    if (type.includes("score")) return "score";
-    if (type.includes("round")) return "round";
-    if (type.includes("track")) return "track";
-    return "system";
-  }
-
-  window.setFilter = function (filter, btn) {
-    currentFilter = filter;
-    document.querySelectorAll(".filter-btn[data-filter]").forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-    fetch(`/api/activity?limit=200`)
-      .then((r) => r.json())
-      .then((activities) => renderActivityLog(activities));
-  };
-
-  window.exportActivityLog = function () {
-    fetch("/api/activity?limit=1000")
-      .then((r) => r.json())
-      .then((activities) => {
-        const csv =
-          "Timestamp,Type,Details,Source,Round\n" +
-          activities
-            .map((a) => `"${a.timestamp}","${a.type}","${a.details}","${a.source}","${a.round !== undefined ? a.round : ""}"`)
-            .join("\n");
-        const blob = new Blob([csv], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `sound-check-activity-${new Date().toISOString().slice(0, 10)}.csv`;
-        link.click();
-        URL.revokeObjectURL(url);
-      });
-  };
-
-  window.showResetLogModal = function () {
-    document.getElementById("resetLogModal").classList.add("active");
-    document.getElementById("resetLogPassword").value = "";
-  };
-
-  window.closeResetLogModal = function () {
-    document.getElementById("resetLogModal").classList.remove("active");
-  };
-
-  window.executeResetLog = function () {
-    const password = document.getElementById("resetLogPassword").value;
-    fetch("/api/activity/reset", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success) {
-          closeResetLogModal();
-          renderActivityLog([]);
-          showNotification("Activity log reset");
-        } else {
-          showNotification(data.message || "Failed to reset log", true);
-        }
-      })
-      .catch(() => showNotification("Failed to reset log", true));
-  };
-
-  // Close modals
-  document.getElementById("resetLogModal").addEventListener("click", function (e) {
-    if (e.target === this) closeResetLogModal();
-  });
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") closeResetLogModal();
-  });
 
   // =============================================================================
   // Full Reset
@@ -235,12 +162,13 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((data) => {
           if (data.success) {
             showNotification("Game reset complete");
-            // Refresh data
             fetch("/api/state")
               .then((r) => r.json())
               .then((state) => {
+                currentState = state;
                 document.getElementById("currentBenchmark").textContent = state.benchmark;
                 document.getElementById("currentScore").textContent = state.score;
+                updateBenchmarkProgress(state.score, state.benchmark);
               });
             fetch("/api/benchmark-history")
               .then((r) => r.json())

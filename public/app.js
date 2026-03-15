@@ -3,15 +3,16 @@ document.addEventListener("DOMContentLoaded", function () {
   // Round definitions (mirror of server)
   // =============================================================================
   const ROUNDS = [
-    { id: 0, name: "OPENING", displayName: "Opening", shortName: "Open", duration: "3-4 min" },
+    { id: 0, name: "OPENING", displayName: "Opening", shortName: "R0", duration: "3-4 min" },
     { id: 1, name: "SHOUT", displayName: "Round 1 - Shout", shortName: "R1", duration: "6 min" },
     { id: 2, name: "EVERYBODY_DANCE_NOW", displayName: "Round 2 - Everybody Dance Now", shortName: "R2", duration: "6-7 min" },
     { id: 3, name: "SING_IT_BACK", displayName: "Round 3 - Sing It Back", shortName: "R3", duration: "7 min" },
     { id: 4, name: "MID_SCORE_REVEAL", displayName: "Mid Show Score Reveal", shortName: "Mid", duration: "2-3 min" },
     { id: 5, name: "LET_ME_ENTERTAIN_YOU", displayName: "Round 4 - Let Me Entertain You", shortName: "R4", duration: "7 min" },
     { id: 6, name: "DO_YOU_REMEMBER", displayName: "Round 5 - Do You Remember The Time", shortName: "R5", duration: "5-6 min" },
-    { id: 7, name: "ONE_MORE_TIME", displayName: "Final Round - One More Time", shortName: "Final", duration: "7-8 min" },
-    { id: 8, name: "FINAL_SCORE_REVEAL", displayName: "Final Score Reveal", shortName: "End", duration: "3-4 min" },
+    { id: 7, name: "R6", displayName: "Round 6", shortName: "R6", duration: "7 min" },
+    { id: 8, name: "ONE_MORE_TIME", displayName: "Final Round - One More Time", shortName: "Final", duration: "7-8 min" },
+    { id: 9, name: "FINAL_SCORE_REVEAL", displayName: "Final Score Reveal", shortName: "End", duration: "3-4 min" },
   ];
 
   // =============================================================================

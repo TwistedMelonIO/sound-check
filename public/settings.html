@@ -11,47 +11,215 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* ── Layout ───────────────────────────────────────────── */
         .settings-layout {
             position: relative;
             z-index: 10;
             max-width: 960px;
             margin: 0 auto;
-            padding: 1.5rem;
+            padding: 2rem 1.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
 
-        .settings-section {
-            margin-bottom: 1.5rem;
+        /* 2x2 grid — top row fixed height for Music Pack + Benchmark,
+           bottom row sizes to its own content */
+        .settings-grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 320px auto;
+            gap: 1rem;
         }
 
-        .settings-section h2 {
-            font-family: 'Syne', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin: 0 0 1rem;
+        .settings-grid-2x2 > div {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        /* Only top-row panels stretch to fill their fixed row height */
+        .settings-grid-2x2 > div:nth-child(-n+2) .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        @media (max-width: 680px) {
+            .settings-grid-2x2 { grid-template-columns: 1fr; }
+        }
+
+        /* ── Section labels ───────────────────────────────────── */
+        .section-label {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-label-bar {
+            width: 3px;
+            height: 14px;
+            border-radius: 2px;
+            background: var(--accent-primary);
+            flex-shrink: 0;
+        }
+
+        .section-label-bar.warning { background: var(--accent-warning); }
+        .section-label-bar.muted   { background: var(--text-tertiary); }
+        .section-label-bar.danger  { background: var(--accent-danger); }
+
+        .section-label-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        /* ── Panel (replaces generic .card for settings) ─────── */
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .panel-body {
+            padding: 1.25rem;
+        }
+
+        /* ── Pack cards ───────────────────────────────────────── */
+
+        /* Panel needs to be flex so body can grow */
+        .panel-pack {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        #packSelection {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            flex: 1;
+            padding: 1rem;
         }
 
         .pack-card {
-            background: var(--bg-tertiary);
-            border: 2px solid var(--border-primary);
+            position: relative;
+            overflow: hidden;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-primary);
             border-radius: 10px;
-            padding: 1rem 1.25rem;
+            padding: 1.1rem 1.2rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 0.5rem;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: background 0.2s ease, border-color 0.2s ease,
+                        transform 0.18s cubic-bezier(0.34,1.56,0.64,1),
+                        box-shadow 0.2s ease;
+            will-change: transform;
+        }
+
+        /* Animated shimmer sweep on hover */
+        .pack-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                105deg,
+                transparent 30%,
+                rgba(99,102,241,0.06) 50%,
+                transparent 70%
+            );
+            transform: translateX(-100%);
+            transition: transform 0.45s ease;
+            pointer-events: none;
+        }
+
+        .pack-card:hover::before {
+            transform: translateX(100%);
         }
 
         .pack-card:hover {
-            border-color: var(--accent-primary);
+            background: rgba(99,102,241,0.05);
+            border-color: rgba(99,102,241,0.25);
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 6px 24px rgba(99,102,241,0.1), 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        .pack-card:active {
+            transform: translateY(0px) scale(0.99);
+            transition-duration: 0.08s;
         }
 
         .pack-card.selected {
-            border-color: var(--accent-primary);
-            background: rgba(99, 102, 241, 0.1);
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+            background: rgba(99,102,241,0.08);
+            border-color: rgba(99,102,241,0.35);
+            box-shadow: 0 0 0 1px rgba(99,102,241,0.2),
+                        0 4px 20px rgba(99,102,241,0.12),
+                        inset 0 0 20px rgba(99,102,241,0.04);
+        }
+
+        .pack-card.selected:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 0 0 1px rgba(99,102,241,0.3),
+                        0 8px 28px rgba(99,102,241,0.18),
+                        inset 0 0 20px rgba(99,102,241,0.05);
+        }
+
+        /* Left accent stripe */
+        .pack-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15%;
+            bottom: 15%;
+            width: 3px;
+            border-radius: 0 2px 2px 0;
+            background: transparent;
+            transition: background 0.2s ease, top 0.2s ease, bottom 0.2s ease;
+        }
+
+        .pack-card:hover::after {
+            background: rgba(99,102,241,0.4);
+            top: 25%;
+            bottom: 25%;
+        }
+
+        .pack-card.selected::after {
+            background: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(99,102,241,0.6);
+            top: 10%;
+            bottom: 10%;
+        }
+
+        .pack-card-num {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            width: 1.4rem;
+            flex-shrink: 0;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .pack-card:hover .pack-card-num {
+            transform: scale(1.15);
+        }
+
+        .pack-card.selected .pack-card-num {
+            color: var(--accent-primary);
+        }
+
+        .pack-card-info {
+            flex: 1;
+            min-width: 0;
         }
 
         .pack-card-title {
@@ -59,129 +227,323 @@
             font-size: 0.95rem;
             font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 0.25rem;
+            line-height: 1.2;
+            margin-bottom: 0.3rem;
+            transition: color 0.2s;
+        }
+
+        .pack-card.selected .pack-card-title {
+            color: #fff;
         }
 
         .pack-card-desc {
-            font-size: 0.8rem;
+            font-size: 0.76rem;
+            color: var(--text-tertiary);
+            line-height: 1.45;
+            transition: color 0.2s;
+        }
+
+        .pack-card:hover .pack-card-desc {
             color: var(--text-secondary);
         }
 
-        .pack-card-badge {
-            display: inline-block;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.65rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            padding: 0.15rem 0.5rem;
-            border-radius: 4px;
-            background: rgba(99, 102, 241, 0.2);
-            color: var(--accent-primary);
-            margin-top: 0.4rem;
+        .pack-card-check {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-secondary);
+            flex-shrink: 0;
+            transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .benchmark-input-row {
+        .pack-card:hover .pack-card-check {
+            border-color: rgba(99,102,241,0.5);
+            transform: scale(1.1);
+        }
+
+        .pack-card.selected .pack-card-check {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 12px rgba(99,102,241,0.55), 0 0 4px rgba(99,102,241,0.8);
+            transform: scale(1.15);
+        }
+
+        .pack-card.selected .pack-card-check::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        /* ── Benchmark panel ──────────────────────────────────── */
+        .bench-stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            margin-bottom: 1.25rem;
+        }
+
+        .bench-stat {
+            padding: 0.75rem 1rem;
+        }
+
+        .bench-stat:first-child {
+            border-right: 1px solid var(--border-primary);
+        }
+
+        .bench-stat-label {
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.4rem;
+        }
+
+        .bench-stat-value {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .bench-stat-value.accent {
+            color: var(--accent-primary);
+            text-shadow: 0 0 30px rgba(99,102,241,0.25);
+        }
+
+        /* Progress bar */
+        .bench-progress-wrap {
+            padding: 0 1rem 1rem;
+        }
+
+        .bench-progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            margin-bottom: 0.4rem;
+        }
+
+        .bench-progress-track {
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            overflow: hidden;
+            border: 1px solid var(--border-primary);
+        }
+
+        .bench-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transition: width 0.5s ease;
+            box-shadow: 0 0 8px rgba(99,102,241,0.4);
+            min-width: 2px;
+        }
+
+        .bench-progress-fill.over {
+            background: linear-gradient(90deg, var(--accent-success), #10b981);
+            box-shadow: 0 0 8px rgba(52,211,153,0.4);
+        }
+
+        /* Benchmark input */
+        .bench-input-row {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 1rem;
+            padding: 0 1rem 1rem;
         }
 
-        .benchmark-input-row input {
+        .bench-input-row input {
             flex: 1;
-            padding: 0.6rem 1rem;
-            border-radius: 8px;
+            padding: 0.55rem 0.75rem;
+            border-radius: 7px;
             border: 1px solid var(--border-secondary);
-            background: var(--bg-tertiary);
+            background: rgba(255,255,255,0.03);
             color: var(--text-primary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            transition: border-color 0.2s;
         }
 
-        .benchmark-input-row input:focus {
+        .bench-input-row input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .bench-input-row input:focus {
             outline: none;
             border-color: var(--accent-primary);
         }
 
+        /* Benchmark history */
+        .bench-history-wrap {
+            border-top: 1px solid var(--border-primary);
+            padding: 0.75rem 1rem 0.5rem;
+        }
+
+        .bench-history-heading {
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.6rem;
+        }
+
         .history-table {
             width: 100%;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
+            border-collapse: collapse;
         }
 
         .history-table th {
             text-align: left;
-            padding: 0.5rem 0.75rem;
+            padding: 0.25rem 0.4rem;
             color: var(--text-tertiary);
+            font-size: 0.6rem;
             font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 0.7rem;
+            letter-spacing: 0.06em;
             border-bottom: 1px solid var(--border-primary);
         }
 
         .history-table td {
-            padding: 0.5rem 0.75rem;
+            padding: 0.3rem 0.4rem;
             color: var(--text-secondary);
-            border-bottom: 1px solid var(--border-primary);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
         }
 
-        .activity-log-table {
-            width: 100%;
-            font-size: 0.75rem;
-        }
-
-        .activity-log-table th {
-            text-align: left;
-            padding: 0.4rem 0.75rem;
-            color: var(--text-tertiary);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 0.65rem;
-            border-bottom: 1px solid var(--border-primary);
-            position: sticky;
-            top: 0;
-            background: var(--bg-secondary);
-        }
-
-        .activity-log-table td {
-            padding: 0.35rem 0.75rem;
-            border-bottom: 1px solid var(--border-primary);
-            color: var(--text-secondary);
-        }
-
-        .activity-log-container {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .filter-row {
+        /* ── Activity Log row ─────────────────────────────────── */
+        .activity-link-panel {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
         }
 
-        .filter-btn {
-            padding: 0.3rem 0.75rem;
-            border-radius: 6px;
-            border: 1px solid var(--border-secondary);
-            background: var(--bg-tertiary);
+        .activity-link-body {
+            padding: 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .activity-stat-row {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .activity-stat {
+        }
+
+        .activity-stat-value {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .activity-stat-label {
+            font-size: 0.62rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 0.25rem;
+        }
+
+        .activity-desc {
+            font-size: 0.8rem;
             color: var(--text-secondary);
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 500;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .activity-link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.25rem;
+            background: rgba(99,102,241,0.06);
+            border-top: 1px solid rgba(99,102,241,0.12);
+            text-decoration: none;
+            transition: background 0.2s;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
 
-        .filter-btn.active {
-            border-color: var(--accent-primary);
-            background: rgba(99, 102, 241, 0.15);
+        .activity-link-btn:hover {
+            background: rgba(99,102,241,0.12);
+        }
+
+        .activity-link-btn-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
             color: var(--accent-primary);
+            letter-spacing: 0.04em;
         }
 
-        .filter-btn:hover {
-            border-color: var(--accent-primary);
+        /* ── Danger Zone ──────────────────────────────────────── */
+        .danger-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .danger-body {
+            padding: 1.25rem;
+            flex: 1;
+        }
+
+        .danger-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.4rem;
+        }
+
+        .danger-desc {
+            font-size: 0.78rem;
+            color: var(--text-tertiary);
+            line-height: 1.5;
+        }
+
+        .danger-footer {
+            padding: 0.75rem 1.25rem;
+            border-top: 1px solid rgba(239,68,68,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .btn-danger {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: 7px;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: var(--accent-danger);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239,68,68,0.18);
+            border-color: var(--accent-danger);
         }
     </style>
 </head>
@@ -211,101 +573,108 @@
         </div>
     </header>
 
-    <!-- Settings Content -->
     <div class="settings-layout">
+        <div class="settings-grid-2x2">
 
-        <!-- Pack Selection -->
-        <div class="settings-section">
-            <h2>
-                <i data-lucide="disc-3" style="width:18px;height:18px;color:var(--accent-primary);"></i>
-                Music Pack
-            </h2>
-            <div class="card">
-                <div class="card-body" id="packSelection">
-                    <!-- Populated by JS -->
+            <!-- Music Pack -->
+            <div>
+                <div class="section-label">
+                    <div class="section-label-bar"></div>
+                    <span class="section-label-text">Music Pack</span>
+                </div>
+                <div class="panel panel-pack">
+                    <div id="packSelection">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Benchmark Management -->
-        <div class="settings-section">
-            <h2>
-                <i data-lucide="target" style="width:18px;height:18px;color:var(--accent-warning);"></i>
-                Benchmark
-            </h2>
-            <div class="card">
-                <div class="card-body">
-                    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
-                        <div>
-                            <div style="font-size:0.7rem;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.08em;">Current Benchmark</div>
-                            <div style="font-family:'Unbounded',sans-serif;font-size:2rem;font-weight:700;" id="currentBenchmark">0</div>
+            <!-- Benchmark -->
+            <div>
+                <div class="section-label">
+                    <div class="section-label-bar warning"></div>
+                    <span class="section-label-text">Benchmark</span>
+                </div>
+                <div class="panel">
+                    <div class="bench-stats-row">
+                        <div class="bench-stat">
+                            <div class="bench-stat-label">Target</div>
+                            <div class="bench-stat-value" id="currentBenchmark">0</div>
                         </div>
-                        <div>
-                            <div style="font-size:0.7rem;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.08em;">Current Score</div>
-                            <div style="font-family:'Unbounded',sans-serif;font-size:2rem;font-weight:700;color:var(--accent-primary);" id="currentScore">0</div>
+                        <div class="bench-stat">
+                            <div class="bench-stat-label">Current Score</div>
+                            <div class="bench-stat-value accent" id="currentScore">0</div>
                         </div>
                     </div>
-                    <div class="benchmark-input-row">
-                        <input type="number" id="benchmarkInput" placeholder="Set new benchmark..." min="0">
+                    <div class="bench-progress-wrap">
+                        <div class="bench-progress-label">
+                            <span>Progress to benchmark</span>
+                            <span id="benchProgressPct">0%</span>
+                        </div>
+                        <div class="bench-progress-track">
+                            <div class="bench-progress-fill" id="benchProgressFill" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div class="bench-input-row">
+                        <input type="number" id="benchmarkInput" placeholder="Set new benchmark…" min="0">
                         <button class="btn-primary" onclick="setBenchmark()">Set</button>
                     </div>
-                    <h3 style="font-size:0.85rem;font-weight:600;margin:1.5rem 0 0.75rem;">Benchmark History</h3>
-                    <div id="benchmarkHistory">
-                        <p style="font-size:0.8rem;color:var(--text-tertiary);">No history yet</p>
+                    <div class="bench-history-wrap">
+                        <div class="bench-history-heading">History</div>
+                        <div id="benchmarkHistory">
+                            <p style="font-size:0.75rem;color:var(--text-tertiary);">No history yet</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Activity Log -->
-        <div class="settings-section">
-            <h2>
-                <i data-lucide="scroll-text" style="width:18px;height:18px;color:var(--text-secondary);"></i>
-                Activity Log
-            </h2>
-            <div class="card">
-                <div class="card-body">
-                    <div class="filter-row">
-                        <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
-                        <button class="filter-btn" data-filter="score" onclick="setFilter('score', this)">Score</button>
-                        <button class="filter-btn" data-filter="round" onclick="setFilter('round', this)">Round</button>
-                        <button class="filter-btn" data-filter="track" onclick="setFilter('track', this)">Track</button>
-                        <button class="filter-btn" data-filter="system" onclick="setFilter('system', this)">System</button>
-                        <div style="flex:1;"></div>
-                        <button class="filter-btn" style="color:var(--accent-danger);border-color:rgba(239,68,68,0.3);" onclick="showResetLogModal()">Reset Log</button>
-                        <button class="filter-btn" onclick="exportActivityLog()">
-                            <i data-lucide="download" style="width:12px;height:12px;"></i> Export
+            <!-- Activity Log -->
+            <div>
+                <div class="section-label">
+                    <div class="section-label-bar muted"></div>
+                    <span class="section-label-text">Activity Log</span>
+                </div>
+                <div class="panel activity-link-panel">
+                    <div class="activity-link-body">
+                        <div class="activity-stat-row">
+                            <div class="activity-stat">
+                                <div class="activity-stat-value" id="activityTotalCount">—</div>
+                                <div class="activity-stat-label">Total Events</div>
+                            </div>
+                            <div class="activity-stat">
+                                <div class="activity-stat-value" id="activityScoreCount">—</div>
+                                <div class="activity-stat-label">Score Changes</div>
+                            </div>
+                        </div>
+                        <p class="activity-desc">Full event history — scores, rounds, tracks, and system events. Filter, export as CSV, or reset the log.</p>
+                    </div>
+                    <a href="/activity.html" class="activity-link-btn">
+                        <span class="activity-link-btn-text">View Activity Log</span>
+                        <i data-lucide="arrow-right" style="width:15px;height:15px;color:var(--accent-primary);"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div>
+                <div class="section-label">
+                    <div class="section-label-bar danger"></div>
+                    <span class="section-label-text" style="color:rgba(239,68,68,0.6);">Danger Zone</span>
+                </div>
+                <div class="panel danger-panel" style="border-color:rgba(239,68,68,0.1);">
+                    <div class="danger-body">
+                        <div class="danger-title">Reset Game</div>
+                        <p class="danger-desc">Resets the score and round to zero. If the current score exceeds the benchmark, the benchmark is automatically updated to reflect the new record.</p>
+                    </div>
+                    <div class="danger-footer">
+                        <button class="btn-danger" onclick="fullReset()">
+                            <i data-lucide="rotate-ccw" style="width:13px;height:13px;"></i>
+                            Reset Everything
                         </button>
                     </div>
-                    <div class="activity-log-container">
-                        <table class="activity-log-table">
-                            <thead>
-                                <tr><th>Time</th><th>Type</th><th>Details</th><th>Source</th></tr>
-                            </thead>
-                            <tbody id="activityLogBody">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Danger Zone -->
-        <div class="settings-section">
-            <h2 style="color:var(--accent-danger);">
-                <i data-lucide="alert-triangle" style="width:18px;height:18px;"></i>
-                Danger Zone
-            </h2>
-            <div class="card" style="border-color:rgba(239,68,68,0.2);">
-                <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;">
-                    <div>
-                        <p style="font-size:0.9rem;font-weight:500;margin:0;">Reset Everything</p>
-                        <p style="font-size:0.75rem;color:var(--text-tertiary);margin:0.25rem 0 0;">Reset score, round, and check if benchmark was beaten</p>
-                    </div>
-                    <button class="btn-primary" style="background:var(--accent-danger);flex-shrink:0;" onclick="fullReset()">Reset Game</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -337,19 +706,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- Reset Log Modal -->
-    <div id="resetLogModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="font-size:1.1rem;font-weight:600;margin:0 0 1rem;">Reset Activity Log</h3>
-            <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 1rem;">Enter the admin password to clear the activity log.</p>
-            <input type="password" id="resetLogPassword" placeholder="Password" style="width:100%;padding:0.6rem 1rem;border-radius:8px;border:1px solid var(--border-secondary);background:var(--bg-tertiary);color:var(--text-primary);font-size:0.9rem;margin-bottom:1rem;">
-            <div style="display:flex;gap:0.75rem;">
-                <button class="btn-secondary" style="flex:1;" onclick="closeResetLogModal()">Cancel</button>
-                <button class="btn-primary" style="flex:1;background:var(--accent-danger);" onclick="executeResetLog()">Reset Log</button>
-            </div>
-        </div>
-    </div>
 
     <script src="settings.js"></script>
     <script>lucide.createIcons();</script>

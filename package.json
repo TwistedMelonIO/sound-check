@@ -1,6 +1,6 @@
 {
   "name": "sound-check",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Sound Check - Live music gameshow scoring system with QLab OSC integration",
   "main": "src/server.js",
   "scripts": {

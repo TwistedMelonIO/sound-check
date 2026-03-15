@@ -4,6 +4,30 @@ All notable changes to Sound Check are documented here.
 
 ---
 
+## [1.2.0] — 2026-03-15
+
+### Added
+- **Setup script** (`setup.sh`) — drag-and-drop audio path configuration with terminal warnings, file validation, and automatic Docker rebuild
+- **Activity log page** (`/activity.html`) — filterable, exportable log of all game actions with type filtering (score, round, track, system) and CSV export
+- **Round 6** — new round slot (index 7) added between Round 5 and Final Round, expanding show to 10 segments
+- **Short-name OSC commands** — `/sound-check/round/r0` through `/sound-check/round/r6`, plus `/sound-check/round/mid`, `/sound-check/round/final`, `/sound-check/round/end`
+- **Pack sync OSC command** — `/sound-check/pack/sync` re-sends arm/disarm cues to QLab after a QLab restart
+- **Win/Lose automation** — entering the Final Round via OSC automatically arms `WIN` or `LOOSE` cue in QLab based on score vs benchmark
+- Round `shortName` property for cleaner timeline labels and OSC routing
+
+### Changed
+- Docker Compose audio volume mount now uses a placeholder path (`/PATH/TO/YOUR/QLAB/AUDIO/FOLDER`) — configured via `setup.sh`
+- ROUNDS array shifted: Final Round moved from index 7 to index 8, Final Score Reveal from index 8 to index 9
+- Music pack round mappings updated to match new round indices
+- Round cue offsets updated (`ROUND_CUE_OFFSETS[8]` replaces former `[7]`)
+- Settings page UI refactored and simplified
+- OSC dictionary updated with short-name commands and pack sync
+
+### Fixed
+- Win/Lose cue arming now triggers on all round-entry paths (by index, by name, by short name)
+
+---
+
 ## [1.1.0] — 2026-03-12
 
 ### Changed

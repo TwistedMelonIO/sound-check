@@ -24,30 +24,31 @@ console.log("Configuration:", JSON.stringify(CONFIG, null, 2));
 // Round Definitions
 // =============================================================================
 const ROUNDS = [
-  { id: 0, name: "OPENING", displayName: "Opening", duration: "3-4 min", maxTracks: 0 },
-  { id: 1, name: "SHOUT", displayName: "Round 1 - Shout", duration: "6 min", maxTracks: 8 },
-  { id: 2, name: "EVERYBODY_DANCE_NOW", displayName: "Round 2 - Everybody Dance Now", duration: "6-7 min", maxTracks: 12 },
-  { id: 3, name: "SING_IT_BACK", displayName: "Round 3 - Sing It Back", duration: "7 min", maxTracks: 5 },
-  { id: 4, name: "MID_SCORE_REVEAL", displayName: "Mid Show Score Reveal", duration: "2-3 min", maxTracks: 0 },
-  { id: 5, name: "LET_ME_ENTERTAIN_YOU", displayName: "Round 4 - Let Me Entertain You", duration: "7 min", maxTracks: 11 },
-  { id: 6, name: "DO_YOU_REMEMBER", displayName: "Round 5 - Do You Remember The Time", duration: "5-6 min", maxTracks: 9 },
-  { id: 7, name: "ONE_MORE_TIME", displayName: "Final Round - One More Time", duration: "7-8 min", maxTracks: 10 },
-  { id: 8, name: "FINAL_SCORE_REVEAL", displayName: "Final Score Reveal", duration: "3-4 min", maxTracks: 0 },
+  { id: 0, name: "OPENING",             shortName: "R0",    displayName: "Opening",                           duration: "3-4 min",  maxTracks: 0 },
+  { id: 1, name: "SHOUT",               shortName: "R1",    displayName: "Round 1 - Shout",                   duration: "6 min",    maxTracks: 8 },
+  { id: 2, name: "EVERYBODY_DANCE_NOW", shortName: "R2",    displayName: "Round 2 - Everybody Dance Now",     duration: "6-7 min",  maxTracks: 12 },
+  { id: 3, name: "SING_IT_BACK",        shortName: "R3",    displayName: "Round 3 - Sing It Back",            duration: "7 min",    maxTracks: 5 },
+  { id: 4, name: "MID_SCORE_REVEAL",    shortName: "Mid",   displayName: "Mid Show Score Reveal",             duration: "2-3 min",  maxTracks: 0 },
+  { id: 5, name: "LET_ME_ENTERTAIN_YOU",shortName: "R4",    displayName: "Round 4 - Let Me Entertain You",   duration: "7 min",    maxTracks: 11 },
+  { id: 6, name: "DO_YOU_REMEMBER",     shortName: "R5",    displayName: "Round 5 - Do You Remember The Time",duration: "5-6 min",  maxTracks: 9 },
+  { id: 7, name: "R6",                  shortName: "R6",    displayName: "Round 6",                           duration: "7 min",    maxTracks: 0 },
+  { id: 8, name: "ONE_MORE_TIME",       shortName: "Final", displayName: "Final Round - One More Time",       duration: "7-8 min",  maxTracks: 10 },
+  { id: 9, name: "FINAL_SCORE_REVEAL",  shortName: "End",   displayName: "Final Score Reveal",                duration: "3-4 min",  maxTracks: 0 },
 ];
 
 // =============================================================================
 // Music Pack System
 // =============================================================================
 // QLab cue number offsets per round - T1-T55 sequential across all rounds
-// Round 1: T1-T8, Round 2: T9-T20, Round 3: T21-T25,
-// Round 5: T26-T36, Round 6: T37-T45, Round 7: T46-T55
+// Round 1 (idx 1): T1-T8, Round 2 (idx 2): T9-T20, Round 3 (idx 3): T21-T25,
+// Round 4 (idx 5): T26-T36, Round 5 (idx 6): T37-T45, Round 6 (idx 7): (TBD), Final (idx 8): T46-T55
 const ROUND_CUE_OFFSETS = {
   1: 0,    // T1-T8   (8 tracks)
   2: 8,    // T9-T20  (12 tracks)
   3: 20,   // T21-T25 (5 tracks)
   5: 25,   // T26-T36 (11 tracks)
   6: 36,   // T37-T45 (9 tracks)
-  7: 45,   // T46-T55 (10 tracks)
+  8: 45,   // T46-T55 (10 tracks)  — Final Round (idx shifted from 7→8)
 };
 
 function getTrackCueNumber(round, trackIndex) {
@@ -126,7 +127,8 @@ const MUSIC_PACKS = {
         { fileName: "SC Pack 1 (Round 5 - Track 8) - Oasis - Wonderwall.mp3", cueName: "SC Pack 1 (Round 5 - Track 8) - Oasis - Wonderwall" },
         { fileName: "SC Pack 1 (Round 5 - Track 9) - The Weeknd - Blinding Lights.mp3", cueName: "SC Pack 1 (Round 5 - Track 9) - The Weeknd - Blinding Lights" },
       ],
-      7: [
+      7: [],
+      8: [
         { fileName: "SC Pack 1 (Round 6 - Track 1) - ABBA - Dancing Queen.mp3", cueName: "SC Pack 1 (Round 6 - Track 1) - ABBA - Dancing Queen" },
         { fileName: "SC Pack 1 (Round 6 - Track 2) - Cher - Believe.mp3", cueName: "SC Pack 1 (Round 6 - Track 2) - Cher - Believe" },
         { fileName: "SC Pack 1 (Round 6 - Track 3) - Cyndi Lauper - Girls Just Want to Have Fun.mp3", cueName: "SC Pack 1 (Round 6 - Track 3) - Cyndi Lauper - Girls Just Want to Have Fun" },
@@ -138,7 +140,7 @@ const MUSIC_PACKS = {
         { fileName: "SC Pack 1 (Round 6 - Track 9) - The Foundations - Build Me Up Buttercup (Stereo).mp3", cueName: "SC Pack 1 (Round 6 - Track 9) - The Foundations - Build Me Up Buttercup (Stereo)" },
         { fileName: "SC Pack 1 (Round 6 - Track 10) - Vanilla Ice - Ice Ice Baby.mp3", cueName: "SC Pack 1 (Round 6 - Track 10) - Vanilla Ice - Ice Ice Baby" },
       ],
-      8: [],
+      9: [],
     },
   },
   "80s-90s-anthems": {
@@ -203,7 +205,8 @@ const MUSIC_PACKS = {
         { fileName: "SC Pack 2 (Round 5 - Track 8) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 8) - TBC" },
         { fileName: "SC Pack 2 (Round 5 - Track 9) - TBC.mp3", cueName: "SC Pack 2 (Round 5 - Track 9) - TBC" },
       ],
-      7: [
+      7: [],
+      8: [
         { fileName: "SC Pack 2 (Round 6 - Track 1) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 1) - TBC" },
         { fileName: "SC Pack 2 (Round 6 - Track 2) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 2) - TBC" },
         { fileName: "SC Pack 2 (Round 6 - Track 3) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 3) - TBC" },
@@ -215,7 +218,7 @@ const MUSIC_PACKS = {
         { fileName: "SC Pack 2 (Round 6 - Track 9) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 9) - TBC" },
         { fileName: "SC Pack 2 (Round 6 - Track 10) - TBC.mp3", cueName: "SC Pack 2 (Round 6 - Track 10) - TBC" },
       ],
-      8: [],
+      9: [],
     },
   },
   floorfillers: {
@@ -280,7 +283,8 @@ const MUSIC_PACKS = {
         { fileName: "SC Pack 3 (Round 5 - Track 8) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 8) - TBC" },
         { fileName: "SC Pack 3 (Round 5 - Track 9) - TBC.mp3", cueName: "SC Pack 3 (Round 5 - Track 9) - TBC" },
       ],
-      7: [
+      7: [],
+      8: [
         { fileName: "SC Pack 3 (Round 6 - Track 1) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 1) - TBC" },
         { fileName: "SC Pack 3 (Round 6 - Track 2) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 2) - TBC" },
         { fileName: "SC Pack 3 (Round 6 - Track 3) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 3) - TBC" },
@@ -292,7 +296,7 @@ const MUSIC_PACKS = {
         { fileName: "SC Pack 3 (Round 6 - Track 9) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 9) - TBC" },
         { fileName: "SC Pack 3 (Round 6 - Track 10) - TBC.mp3", cueName: "SC Pack 3 (Round 6 - Track 10) - TBC" },
       ],
-      8: [],
+      9: [],
     },
   },
 };
@@ -1169,11 +1173,13 @@ function handleOscMessage(address, args) {
     return;
   }
 
-  // Individual round by number: /sound-check/round/1, /sound-check/round/2, etc.
+  // Individual round by index: /sound-check/round/0 … /sound-check/round/9
+  // Sequence: R0(0) R1(1) R2(2) R3(3) Mid(4) R4(5) R5(6) R6(7) Final(8) End(9)
   const roundDirectMatch = address.match(/^\/sound-check\/round\/(\d+)$/);
   if (roundDirectMatch) {
     const round = parseInt(roundDirectMatch[1]);
     const state = setRound(round, "osc");
+    if (state.currentRound === 8) armWinLoseCues();
     io.emit("stateUpdate", buildStatePayload());
     io.emit("roundChanged", { round: state.currentRound, roundInfo: ROUNDS[state.currentRound] });
     return;
@@ -1183,6 +1189,17 @@ function handleOscMessage(address, args) {
   const roundByName = ROUNDS.find((r) => address === `/sound-check/round/${r.name.toLowerCase()}`);
   if (roundByName) {
     const state = setRound(roundByName.id, "osc");
+    if (state.currentRound === 8) armWinLoseCues();
+    io.emit("stateUpdate", buildStatePayload());
+    io.emit("roundChanged", { round: state.currentRound, roundInfo: ROUNDS[state.currentRound] });
+    return;
+  }
+
+  // Individual round by shortName: /sound-check/round/r1, /sound-check/round/r6, /sound-check/round/mid, etc.
+  const roundByShortName = ROUNDS.find((r) => r.shortName && address === `/sound-check/round/${r.shortName.toLowerCase()}`);
+  if (roundByShortName) {
+    const state = setRound(roundByShortName.id, "osc");
+    if (state.currentRound === 8) armWinLoseCues();
     io.emit("stateUpdate", buildStatePayload());
     io.emit("roundChanged", { round: state.currentRound, roundInfo: ROUNDS[state.currentRound] });
     return;
@@ -1276,6 +1293,19 @@ function handleOscMessage(address, args) {
     return;
   }
 
+  // Pack sync — re-sends arm/disarm cues to QLab so it matches the server's
+  // current pack. Useful after a QLab restart or reset when all 3 packs may
+  // be armed. Fire: /sound-check/pack/sync
+  if (address === "/sound-check/pack/sync") {
+    const activePack = packSettings.currentPack;
+    console.log(`[OSC] Pack sync requested — re-arming: ${activePack}`);
+    armDisarmPackCues(activePack);
+    logActivity("pack_sync", `Pack sync via OSC: ${activePack}`, "osc");
+    // Echo back to the dashboard so any connected UI reflects current state
+    io.emit("stateUpdate", buildStatePayload());
+    return;
+  }
+
   console.log(`[OSC] Unhandled address: ${address}`);
 }
 
@@ -1355,6 +1385,23 @@ function triggerQLabCue(cueName) {
 
 function stopQLabCue(cueName) {
   sendOSCToBridge(`/cue/${cueName}/stop`, 0);
+}
+
+// Arm WIN or LOOSE cue in QLab based on whether the score beats the benchmark.
+// Called automatically whenever the Final round is entered via OSC.
+function armWinLoseCues() {
+  const beaten = gameState.benchmark > 0 && gameState.score >= gameState.benchmark;
+  if (beaten) {
+    sendOSCToBridge("/cue/WIN/armed",   1);
+    sendOSCToBridge("/cue/LOOSE/armed", 0);
+    console.log(`[QLAB] Final round outcome: WIN (score ${gameState.score} >= benchmark ${gameState.benchmark})`);
+    logActivity("final_outcome", `WIN — score ${gameState.score} vs benchmark ${gameState.benchmark}`, "osc");
+  } else {
+    sendOSCToBridge("/cue/WIN/armed",   0);
+    sendOSCToBridge("/cue/LOOSE/armed", 1);
+    console.log(`[QLAB] Final round outcome: LOOSE (score ${gameState.score} < benchmark ${gameState.benchmark})`);
+    logActivity("final_outcome", `LOOSE — score ${gameState.score} vs benchmark ${gameState.benchmark}`, "osc");
+  }
 }
 
 // Arm/disarm QLab cues based on selected pack

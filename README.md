@@ -2,6 +2,8 @@
 
 **Live music gameshow scoring system with QLab OSC integration**
 
+**Latest Version:** v1.2.0 — Setup script, Round 6 support, activity log, pack sync, win/lose automation.
+
 Built by [Twisted Melon](https://www.twistedmelon.io) for use in live entertainment events. Sound Check runs as a Docker container, serving a real-time web dashboard that lets operators track scores, progress through rounds, and trigger QLab audio cues — all from any device on the local network.
 
 ---
@@ -36,19 +38,20 @@ git clone https://github.com/twistedmelon/sound-check.git
 cd sound-check
 ```
 
-### 2. Configure your audio path
+### 2. Run the setup script
 
-Open `docker-compose.yml` and update the volume mount under `sound-check:` to point to your QLab audio folder on the host machine:
+The setup script configures the path to your QLab audio files and starts the containers:
 
-```yaml
-volumes:
-  - /YOUR/LOCAL/PATH/TO/audio:/app/qlab-audio:ro
+```bash
+./setup.sh
 ```
 
-Example (Mac):
-```yaml
-  - /Users/yourname/QLab/SoundCheck/audio:/app/qlab-audio:ro
-```
+When prompted, **drag and drop your audio folder** from Finder into the terminal window and press Enter. The script will:
+- Validate the folder exists and count your audio files
+- Update `docker-compose.yml` with the correct path
+- Build and start the Docker containers
+
+> **Warning:** Changing the audio file path after initial setup will cause the show to stop working. QLab cues will fail to find their audio files and no music will play. Only re-run the setup script if you have intentionally moved your audio files.
 
 ### 3. (Optional) Change the admin password
 
@@ -59,7 +62,18 @@ environment:
   - ADMIN_PASSWORD=8888
 ```
 
-### 4. Build and start
+Then rebuild: `docker compose up -d --build`
+
+### 4. (Alternative) Manual setup
+
+If you prefer not to use the setup script, edit `docker-compose.yml` directly:
+
+```yaml
+volumes:
+  - /YOUR/LOCAL/PATH/TO/audio:/app/qlab-audio:ro
+```
+
+Then build and start:
 
 ```bash
 docker compose build --no-cache
@@ -240,11 +254,17 @@ sound-check/
 ├── public/
 │   ├── index.html         # Main dashboard
 │   ├── settings.html      # Settings page
+│   ├── activity.html      # Activity log viewer
 │   ├── app.js             # Dashboard client JS
+│   ├── settings.js        # Settings client JS
+│   ├── activity.js        # Activity log client JS
 │   └── styles.css         # Shared styles
 ├── data/                  # Persistent game state (gitignored)
+├── setup.sh               # Audio path setup script (run on first install)
 ├── Dockerfile             # Main container build
 ├── docker-compose.yml     # Orchestration
+├── OSC_DICTIONARY.md      # Full OSC command reference
+├── CHANGELOG.md           # Version history
 └── package.json
 ```
 
