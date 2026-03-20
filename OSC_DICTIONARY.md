@@ -86,10 +86,11 @@
 
 | OSC Address | Action |
 |---|---|
-| `/sound-check/start` | Start the show (sets isActive = true) |
+| `/sound-check/start` | Start the show (sets isActive = true, arms all track cues, disarms WIN/LOOSE) |
 | `/sound-check/stop` | Stop the show (sets isActive = false) |
-| `/sound-check/reset` | Full game reset (preserves benchmark) |
+| `/sound-check/reset` | Full game reset (preserves benchmark, arms all track cues, disarms WIN/LOOSE) |
 | `/sound-check/pack/sync` | Re-send pack arm/disarm cues to QLab — use this after a QLab restart or reset to ensure only the active pack is armed |
+| `/sound-check/tracks/arm-all` | Arm all track cues and disarm WIN/LOOSE in QLab for the current pack |
 
 ---
 

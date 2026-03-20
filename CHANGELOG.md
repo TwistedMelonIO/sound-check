@@ -4,6 +4,15 @@ All notable changes to Sound Check are documented here.
 
 ---
 
+## [1.4.0] — 2026-03-18
+
+### Added
+- **Reset OSC arms all track cues** — `/sound-check/reset` and `/sound-check/start` now arm all track cues for the current pack and disarm WIN/LOOSE cues, ensuring QLab is in a clean state at the start and end of every show
+- **Arm-all OSC command** — new `/sound-check/tracks/arm-all` command to manually arm all track cues and disarm WIN/LOOSE from StreamDeck or Bitfocus Companion
+- All arm/disarm commands use staggered OSC (10ms apart) to avoid flooding QLab
+
+---
+
 ## [1.3.0] — 2026-03-15
 
 ### Added

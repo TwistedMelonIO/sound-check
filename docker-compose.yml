@@ -21,7 +21,7 @@ services:
       # Persistent storage for game state, benchmarks, activity log, pack settings
       - sound-check-data:/app/data
       # Host QLab audio folder -> inside container (update host path per machine)
-      - /PATH/TO/YOUR/QLAB/AUDIO/FOLDER:/app/qlab-audio:ro
+      - /Users/chrisdevlin/Desktop/QLAB FILES/Sound Check/audio:/app/qlab-audio:ro
     depends_on:
       - sound-check-bridge
     restart: unless-stopped

@@ -59,6 +59,16 @@ function getTrackCueNumber(round, trackIndex) {
   return `T${offset + trackIndex + 1}`;
 }
 
+// How many tracks to randomly disarm per round (placeholder values — update later)
+const ROUND_DISARM_COUNTS = {
+  1: 5,   // R1: disarm 5 of 8 (3 remain armed)
+  2: 9,   // R2: disarm 9 of 12 (3 remain armed)
+  3: 2,   // R3: disarm 2 of 5 (3 remain armed)
+  5: 9,   // R4: disarm 9 of 11 (2 remain armed)
+  6: 4,   // R5: disarm 4 of 9 (5 remain armed)
+  8: 8,   // Final/R6: disarm 8 of 10 (2 remain armed)
+};
+
 // QLab cue names for arm/disarm per pack
 const PACK_QLAB_CUES = {
   "ultimate-singalong": "PACK1",
@@ -582,6 +592,8 @@ function startShow(source = "system") {
   gameState.lastUpdated = new Date().toISOString();
   saveGameState();
   logActivity("show_start", "Show started", source);
+  // Arm all track cues at the start of the show before randomization
+  armAllTrackCues(packSettings.currentPack, source);
   return gameState;
 }
 
@@ -614,6 +626,8 @@ function resetGame(source = "system") {
   logActivity("game_reset", "Full game reset", source);
   updateQLabScoreText(0);
   updateQLabBenchmarkText(gameState.benchmark);
+  // Re-arm all track cues and disarm WIN/LOOSE so QLab is clean for the next show
+  armAllTrackCues(packSettings.currentPack, source);
   return gameState;
 }
 
@@ -912,6 +926,7 @@ app.post("/api/pack-settings", (req, res) => {
   savePackSettings();
   updateTrackCuesForPack(currentPack);
   armDisarmPackCues(currentPack);
+  randomDisarmTrackCues(currentPack);
   io.emit("packChanged", { packId: currentPack, packInfo: { id: currentPack, name: MUSIC_PACKS[currentPack].name } });
   logActivity("pack_change", `Pack changed from ${oldPack} to ${currentPack}`, "api");
   res.json({ success: true, ...packSettings });
@@ -1297,8 +1312,19 @@ function handleOscMessage(address, args) {
     const activePack = packSettings.currentPack;
     console.log(`[OSC] Pack sync requested — re-arming: ${activePack}`);
     armDisarmPackCues(activePack);
+    randomDisarmTrackCues(activePack);
     logActivity("pack_sync", `Pack sync via OSC: ${activePack}`, "osc");
     // Echo back to the dashboard so any connected UI reflects current state
+    io.emit("stateUpdate", buildStatePayload());
+    return;
+  }
+
+  // Arm all track cues — useful for resetting QLab to a clean state
+  // Fire: /sound-check/tracks/arm-all
+  if (address === "/sound-check/tracks/arm-all") {
+    const activePack = packSettings.currentPack;
+    console.log(`[OSC] Arm all tracks requested for pack: ${activePack}`);
+    armAllTrackCues(activePack, "osc");
     io.emit("stateUpdate", buildStatePayload());
     return;
   }
@@ -1368,6 +1394,183 @@ function sendOSCToBridge(address, value) {
   req.end();
 }
 
+// Send an array of OSC commands with a 10ms stagger between each
+async function sendStaggeredOSC(commands) {
+  for (let i = 0; i < commands.length; i++) {
+    sendOSCToBridge(commands[i].address, commands[i].value);
+    if (i < commands.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+  }
+}
+
+// Fisher-Yates shuffle
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Map round index to the round number used in QLab cue names (e.g. R1.1, R2.1)
+// Round indices 1,2,3 map to R1,R2,R3; index 5 = R4; index 6 = R5; index 8 = R6 (Final)
+const ROUND_QLAB_NUMBERS = {
+  1: 1,   // Round 1
+  2: 2,   // Round 2
+  3: 3,   // Round 3
+  5: 4,   // Round 4
+  6: 5,   // Round 5
+  8: 6,   // Final Round (R6 in QLab)
+};
+
+// Get QLab cue name for a track, e.g. "R1.1", "R2.5"
+function getTrackQLabCue(roundIndex, trackIndex) {
+  const qlabRound = ROUND_QLAB_NUMBERS[roundIndex];
+  if (qlabRound === undefined) return null;
+  return `R${qlabRound}.${trackIndex + 1}`;
+}
+
+// Stores the last random arm/disarm state so pack/sync can re-apply it
+// Format: { roundIndex: { armed: [indices], disarmed: [indices] } }
+let lastDisarmState = {};
+
+// Randomly disarm track cues for each round.
+// Logic: disarm ALL track cues first, then arm only randomly chosen ones.
+// Stores the result so it can be re-applied via reapplyDisarmState().
+// QLab cue format: R1.1, R1.2, R2.1, etc.
+async function randomDisarmTrackCues(packId) {
+  const pack = MUSIC_PACKS[packId];
+  if (!pack) return;
+
+  const commands = [];
+  lastDisarmState = {};
+
+  Object.keys(pack.rounds).forEach((roundKey) => {
+    const round = parseInt(roundKey);
+    const tracks = pack.rounds[round] || [];
+    if (tracks.length === 0) return;
+
+    const disarmCount = ROUND_DISARM_COUNTS[round];
+    if (disarmCount === undefined || disarmCount <= 0) return;
+
+    // Clamp so we don't disarm more than available
+    const actualDisarm = Math.min(disarmCount, tracks.length - 1);
+
+    // Disarm all track cues for this round first
+    tracks.forEach((_, index) => {
+      const cueName = getTrackQLabCue(round, index);
+      if (cueName) {
+        commands.push({ address: `/cue/${cueName}/armed`, value: 0 });
+      }
+    });
+
+    // Pick which tracks to arm (total - disarm count)
+    const indices = tracks.map((_, i) => i);
+    const shuffled = shuffleArray(indices);
+    const armedIndices = shuffled.slice(0, tracks.length - actualDisarm);
+    const disarmedIndices = shuffled.slice(tracks.length - actualDisarm);
+
+    // Store state for re-apply
+    lastDisarmState[round] = { armed: armedIndices, disarmed: disarmedIndices };
+
+    armedIndices.forEach((index) => {
+      const cueName = getTrackQLabCue(round, index);
+      if (cueName) {
+        commands.push({ address: `/cue/${cueName}/armed`, value: 1 });
+      }
+    });
+
+    const armedCueNames = armedIndices.map(i => getTrackQLabCue(round, i)).join(", ");
+    const disarmedCueNames = disarmedIndices.map(i => getTrackQLabCue(round, i)).join(", ");
+    console.log(`[DISARM] Round ${ROUND_QLAB_NUMBERS[round]}: Armed [${armedCueNames}], Disarmed [${disarmedCueNames}]`);
+  });
+
+  if (commands.length > 0) {
+    console.log(`[DISARM] Sending ${commands.length} staggered OSC commands (10ms apart)...`);
+    await sendStaggeredOSC(commands);
+    logActivity("track_disarm", `Random track disarm applied for pack ${packId} (${commands.length} OSC commands)`, "system");
+  }
+}
+
+// Re-apply the last stored arm/disarm state without re-randomizing.
+// Use after QLab rehearsal/reset when disarmed cues may have been re-armed.
+async function reapplyDisarmState(packId) {
+  const pack = MUSIC_PACKS[packId];
+  if (!pack || Object.keys(lastDisarmState).length === 0) {
+    console.log("[DISARM SYNC] No stored disarm state — running fresh randomization");
+    return randomDisarmTrackCues(packId);
+  }
+
+  const commands = [];
+
+  Object.keys(lastDisarmState).forEach((roundKey) => {
+    const round = parseInt(roundKey);
+    const tracks = pack.rounds[round] || [];
+    if (tracks.length === 0) return;
+
+    const state = lastDisarmState[round];
+
+    // Disarm all first
+    tracks.forEach((_, index) => {
+      const cueName = getTrackQLabCue(round, index);
+      if (cueName) {
+        commands.push({ address: `/cue/${cueName}/armed`, value: 0 });
+      }
+    });
+
+    // Re-arm the same tracks as last time
+    state.armed.forEach((index) => {
+      const cueName = getTrackQLabCue(round, index);
+      if (cueName) {
+        commands.push({ address: `/cue/${cueName}/armed`, value: 1 });
+      }
+    });
+
+    const armedCueNames = state.armed.map(i => getTrackQLabCue(round, i)).join(", ");
+    const disarmedCueNames = state.disarmed.map(i => getTrackQLabCue(round, i)).join(", ");
+    console.log(`[DISARM SYNC] Round ${ROUND_QLAB_NUMBERS[round]}: Armed [${armedCueNames}], Disarmed [${disarmedCueNames}]`);
+  });
+
+  if (commands.length > 0) {
+    console.log(`[DISARM SYNC] Re-applying ${commands.length} staggered OSC commands (10ms apart)...`);
+    await sendStaggeredOSC(commands);
+    logActivity("track_disarm_sync", `Re-applied disarm state for pack ${packId} (${commands.length} OSC commands)`, "system");
+  }
+}
+
+// Arm ALL track cues for the current pack across every round and disarm
+// WIN/LOOSE cues. Use at show start/end so all cues are primed before
+// randomization and outcome cues are cleared.
+async function armAllTrackCues(packId, source = "system") {
+  const pack = MUSIC_PACKS[packId];
+  if (!pack) return;
+
+  const commands = [];
+
+  Object.keys(pack.rounds).forEach((roundKey) => {
+    const round = parseInt(roundKey);
+    const tracks = pack.rounds[round] || [];
+    if (tracks.length === 0) return;
+
+    tracks.forEach((_, index) => {
+      const cueName = getTrackQLabCue(round, index);
+      if (cueName) {
+        commands.push({ address: `/cue/${cueName}/armed`, value: 1 });
+      }
+    });
+  });
+
+  // Disarm WIN/LOOSE so no stale outcome fires on the next show
+  commands.push({ address: "/cue/WIN/armed", value: 0 });
+  commands.push({ address: "/cue/LOOSE/armed", value: 0 });
+
+  console.log(`[ARM ALL] Arming all track cues and disarming WIN/LOOSE for pack ${packId} (${commands.length} OSC commands)...`);
+  await sendStaggeredOSC(commands);
+  logActivity("tracks_arm_all", `Armed all track cues and disarmed WIN/LOOSE for pack ${packId} (${commands.length} OSC commands)`, source);
+}
+
 function updateQLabScoreText(score) {
   sendOSCToBridge("/cue/SCORE/text", String(score));
   sendOSCToBridge("/cue/FINALSCORE/text", String(score));
@@ -1432,6 +1635,7 @@ server.listen(CONFIG.WEB_PORT, "0.0.0.0", () => {
 
   // Sync QLab on startup
   armDisarmPackCues(packSettings.currentPack);
+  randomDisarmTrackCues(packSettings.currentPack);
   updateQLabScoreText(gameState.score);
   updateQLabBenchmarkText(gameState.benchmark);
 
